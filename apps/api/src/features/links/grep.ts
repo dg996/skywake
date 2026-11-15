@@ -16,6 +16,7 @@ export interface GrepAsked {
   folder: string;
   glob?: string;
   ignoreCase: boolean;
+  at?: string;
   limit: number;
 }
 
@@ -47,7 +48,7 @@ export async function grepIndexed(
   const needs = neededGrams(asked.pattern);
   if (!needs) return null;
 
-  const head = await ns.engine.head(branch);
+  const head = asked.at ?? (await ns.engine.head(branch));
   const changed = head === linked.synced ? [] : await ns.engine.diffCommits(linked.synced, head);
   if (changed.length > CHANGED_MAX) return null;
 

@@ -160,7 +160,7 @@ test("servers never claim one branch twice, and take back a lapsed claim", { ski
   assert.equal(new Set(claimed).size, claimed.length);
   // A server that died leaves its claim to run out; then another takes the branch.
   await db.execute(
-    sql`UPDATE api.index_link_branches SET claimed_until = now() - interval '1 second', dirty = true WHERE ${mine} AND claimed_by = 'a'`,
+    sql`UPDATE api.index_link_branches SET claimed_until = now() - interval '1 second', dirty = true, due = now() - interval '1 minute' WHERE ${mine} AND claimed_by = 'a'`,
   );
   const again = await links.claim(db, "c", 10);
   for (const row of a) assert.ok(again.some((taken) => taken.branch === row.branch));

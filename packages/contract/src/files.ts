@@ -121,6 +121,7 @@ export const searchFiles = createRoute({
       ignoreCase: z.enum(["true", "false"]).optional().openapi({
         description: "Match letters of either case. False by default.",
       }),
+      at,
       limit: count("The most matches to return. 100 by default."),
     }),
   },

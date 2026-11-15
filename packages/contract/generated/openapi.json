@@ -9198,6 +9198,17 @@
           },
           {
             "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$",
+              "description": "Read an older commit of the branch instead of its head."
+            },
+            "required": false,
+            "description": "Read an older commit of the branch instead of its head.",
+            "name": "at",
+            "in": "query"
+          },
+          {
+            "schema": {
               "type": [
                 "integer",
                 "null"

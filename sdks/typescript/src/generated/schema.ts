@@ -5877,6 +5877,8 @@ export interface operations {
                 glob?: string;
                 /** @description Match letters of either case. False by default. */
                 ignoreCase?: "true" | "false";
+                /** @description Read an older commit of the branch instead of its head. */
+                at?: string;
                 /** @description The most matches to return. 100 by default. */
                 limit?: number | null;
             };

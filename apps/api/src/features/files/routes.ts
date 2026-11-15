@@ -76,13 +76,14 @@ export const filesFeature: Feature = {
 
     api.openapi(routes.searchFiles, async (c) => {
       const { namespace, branch } = c.req.valid("param");
-      const { pattern, path, glob, ignoreCase, limit } = c.req.valid("query");
+      const { pattern, path, glob, ignoreCase, at, limit } = c.req.valid("query");
       const ns = await readable(c, namespace);
       const asked = {
         pattern,
         folder: path,
         glob,
         ignoreCase: ignoreCase === "true",
+        at,
         limit: clamp(limit, 100, 1, 10_000),
       };
       const indexed = await grepIndexed(c.var.services, ns, branch, asked);

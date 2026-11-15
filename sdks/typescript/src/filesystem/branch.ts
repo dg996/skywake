@@ -44,6 +44,19 @@ export interface ForkOptions {
   withIndex?: boolean;
 }
 
+export interface SearchOptions extends At {
+  path?: string;
+  glob?: string;
+  ignoreCase?: boolean;
+  limit?: number;
+}
+
+export interface FindOptions extends At {
+  path?: string;
+  kind?: "any" | "files" | "folders";
+  limit?: number;
+}
+
 export class Branch {
   constructor(
     readonly namespace: Namespace,
@@ -170,13 +183,24 @@ export class Branch {
   }
 
   /** Finds lines that match a regular expression, like `grep -rn`. */
-  async search(
-    pattern: string,
-    options: { path?: string; limit?: number } = {},
-  ): Promise<Schemas["Match"][]> {
-    const params = { path: this.path, query: { pattern, ...options } };
+  async search(pattern: string, options: SearchOptions = {}): Promise<Schemas["Match"][]> {
+    const { ignoreCase, ...rest } = options;
+    const query = {
+      pattern,
+      ...rest,
+      ignoreCase: ignoreCase === undefined ? undefined : (`${ignoreCase}` as const),
+    };
+    const params = { path: this.path, query };
     return unwrap(
       await this.client.GET("/namespaces/{namespace}/branches/{branch}/search", { params }),
+    );
+  }
+
+  /** Finds paths by glob, like `find -name`, without reading any file. */
+  async find(glob: string, options: FindOptions = {}): Promise<Schemas["FoundPath"][]> {
+    const params = { path: this.path, query: { glob, ...options } };
+    return unwrap(
+      await this.client.GET("/namespaces/{namespace}/branches/{branch}/find", { params }),
     );
   }
 
