@@ -6,6 +6,7 @@
  */
 export async function settled(result: { server: Promise<unknown> }) {
   const answer = (await result.server) as
-    { type?: string; error?: { message?: string } } | undefined;
+    | { type?: string; error?: { message?: string } }
+    | undefined;
   if (answer?.type === "error") throw new Error(answer.error?.message ?? "The change failed");
 }
