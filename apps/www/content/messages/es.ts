@@ -3,9 +3,9 @@ import type { HomeMessages } from "./types";
 export const es: HomeMessages = {
   pages: {
     "/": {
-      title: "Skywake: sistema de archivos y motor de búsqueda escalables para agentes de IA",
+      title: "Skywake: sistema de archivos y búsqueda rápidos en S3 para agentes de IA",
       description:
-        "Sistema de archivos open source y búsqueda híbrida en tu propio bucket S3. Un workspace para cada agente en milisegundos, montado como un disco local.",
+        "Sistema de archivos y búsqueda open source en tu propio bucket S3. Monta como un disco local, da a cada agente de IA su copia en 10 ms y busca.",
     },
     "/filesystem": {
       title: "Sistema de archivos sobre S3 para agentes de IA: monta, copia y fusiona",
@@ -69,7 +69,7 @@ export const es: HomeMessages = {
   },
   hero: {
     badge: "Skywake Cloud está en camino. Únete a la lista de espera",
-    titleBefore: "El sistema de archivos y motor de búsqueda escalable",
+    titleBefore: "Sistema de archivos y búsqueda rápidos",
     titleAccent: "para agentes de IA.",
     screenshotAlt:
       "La consola de Skywake, con los discos de un equipo y los agentes que trabajan en ellos",
@@ -77,7 +77,7 @@ export const es: HomeMessages = {
   },
   useCases: {
     label: "Casos de uso",
-    heading: ["Tú céntrate en crear agentes de vanguardia.", "Skywake se encarga de los datos."],
+    heading: ["Tú construyes los agentes.", "Skywake se encarga de archivos y búsqueda."],
     more: "Ver todos los casos de uso",
     cta: "Saber más",
     items: [
@@ -125,7 +125,7 @@ export const es: HomeMessages = {
         before: "Dale a cada agente ",
         highlight: "su propia copia de tus archivos",
         after:
-          ". Lista en milisegundos, se abre como una carpeta normal y se fusiona cuando termina el trabajo.",
+          ". Lista en 10 ms, se abre como una carpeta normal y se fusiona cuando termina el trabajo.",
         points: [
           "Copia 20,000 archivos en 10 ms",
           "Ábrela sin descargarlo todo",
@@ -221,11 +221,11 @@ export const es: HomeMessages = {
       label: "Filesystem",
       title: "Tu bucket, como un",
       accent: "disco local rápido.",
-      line: "Monta tu almacenamiento de objetos como una carpeta normal. Dale a cada agente su propia copia en milisegundos y luego fusiona los cambios.",
+      line: "Monta tu almacenamiento de objetos como una carpeta normal. Dale a cada agente su propia copia en 10 ms y luego fusiona los cambios.",
       features: [
         {
           name: "Cada agente tiene su propia copia",
-          line: "Una copia completa de tus archivos en milisegundos, sin importar su tamaño. No se duplica nada.",
+          line: "Una copia completa de tus archivos en 10 ms, sin importar su tamaño. No se duplica nada.",
           art: "fork",
         },
         {
@@ -599,7 +599,7 @@ export const es: HomeMessages = {
   guides: {
     eyebrow: "Casos de uso",
     title: "Empieza por el problema que tienes.",
-    accent: "Te mostramos cómo lo resuelve Skywake.",
+    accent: "Así encaja Skywake.",
     onThisPage: "En esta página",
     read: "Leer la guía",
     related: {
@@ -626,7 +626,7 @@ export const es: HomeMessages = {
       "coding-agents": {
         name: "Agentes de código en la nube",
         title: "Cómo darle a cada agente de código su propia copia de tu repo",
-        lead: "Guarda tu repo una vez, con sus paquetes y su caché de build. Cada agente tiene su propia copia en milisegundos, y tú fusionas la solución que prefieras.",
+        lead: "Guarda tu repo una vez, con sus paquetes y su caché de build. Cada agente tiene su propia copia en 10 ms, y tú fusionas la solución que prefieras.",
       },
       "document-agents": {
         name: "Agentes de documentos",
@@ -636,7 +636,7 @@ export const es: HomeMessages = {
       rl: {
         name: "Entornos de RL y evals",
         title: "Cómo darle a cada ejecución de RL una copia limpia de su entorno",
-        lead: "Guarda el entorno una vez. Cada ejecución tiene su propia copia limpia en milisegundos, así los resultados son justos y puedes abrir cualquier ejecución rara después.",
+        lead: "Guarda el entorno una vez. Cada ejecución tiene su propia copia limpia en 10 ms, así los resultados son justos y puedes abrir cualquier ejecución rara después.",
       },
       ci: {
         name: "CI y builds",

@@ -3,9 +3,9 @@ import type { HomeMessages } from "./types";
 export const de: HomeMessages = {
   pages: {
     "/": {
-      title: "Skywake: Skalierbares Dateisystem und Suchmaschine für KI-Agenten",
+      title: "Skywake: Schnelles Dateisystem und Suche auf S3 für KI-Agenten",
       description:
-        "Open-Source-Dateisystem und hybride Suche auf Ihrem eigenen S3-Bucket. Ein Workspace pro Agent in Millisekunden, gemountet wie eine lokale Festplatte.",
+        "Open-Source-Dateisystem und Suche auf Ihrem eigenen S3-Bucket. Wie eine lokale Festplatte mounten, jedem KI-Agenten seine eigene Kopie in 10 ms geben und suchen.",
     },
     "/filesystem": {
       title: "S3-Dateisystem für KI-Agenten: mounten, kopieren, mergen",
@@ -69,7 +69,7 @@ export const de: HomeMessages = {
   },
   hero: {
     badge: "Skywake Cloud kommt. Zur Warteliste",
-    titleBefore: "Das skalierbare Dateisystem und die Suchmaschine",
+    titleBefore: "Schnelles Dateisystem und Suche",
     titleAccent: "für KI-Agenten.",
     screenshotAlt:
       "Die Skywake-Konsole mit den Disks eines Teams und den Agenten, die daran arbeiten",
@@ -77,10 +77,7 @@ export const de: HomeMessages = {
   },
   useCases: {
     label: "Anwendungsfälle",
-    heading: [
-      "Sie konzentrieren sich auf Frontier-Agenten.",
-      "Skywake kümmert sich um die Datenebene.",
-    ],
+    heading: ["Sie bauen die Agenten.", "Skywake kümmert sich um Dateien und Suche."],
     more: "Alle Anwendungsfälle ansehen",
     cta: "Mehr erfahren",
     items: [
@@ -224,11 +221,11 @@ export const de: HomeMessages = {
       label: "Filesystem",
       title: "Ihr Bucket als",
       accent: "schnelle lokale Festplatte.",
-      line: "Mounten Sie Ihren Object Storage als normalen Ordner. Jeder Agent bekommt in Millisekunden seine eigene Kopie, die Änderungen mergen Sie zurück.",
+      line: "Mounten Sie Ihren Object Storage als normalen Ordner. Jeder Agent bekommt in 10 ms seine eigene Kopie, die Änderungen mergen Sie zurück.",
       features: [
         {
           name: "Jeder Agent bekommt seine eigene Kopie",
-          line: "Eine vollständige Kopie Ihrer Dateien in Millisekunden, egal wie groß. Nichts wird dupliziert.",
+          line: "Eine vollständige Kopie Ihrer Dateien in 10 ms, egal wie groß. Nichts wird dupliziert.",
           art: "fork",
         },
         {
@@ -601,7 +598,7 @@ export const de: HomeMessages = {
   guides: {
     eyebrow: "Anwendungsfälle",
     title: "Beginnen Sie mit Ihrem Problem.",
-    accent: "Wir zeigen, wie Skywake es löst.",
+    accent: "So passt Skywake dazu.",
     onThisPage: "Auf dieser Seite",
     read: "Zur Anleitung",
     related: {
@@ -628,7 +625,7 @@ export const de: HomeMessages = {
       "coding-agents": {
         name: "Cloud-Coding-Agenten",
         title: "So bekommt jeder Coding-Agent seine eigene Kopie Ihres Repos",
-        lead: "Speichern Sie Ihr Repo einmal, mit Paketen und Build-Cache. Jeder Agent bekommt in Millisekunden seine eigene Kopie, und Sie mergen den Fix, der Ihnen gefällt.",
+        lead: "Speichern Sie Ihr Repo einmal, mit Paketen und Build-Cache. Jeder Agent bekommt in 10 ms seine eigene Kopie, und Sie mergen den Fix, der Ihnen gefällt.",
       },
       "document-agents": {
         name: "Dokumenten-Agenten",
@@ -638,7 +635,7 @@ export const de: HomeMessages = {
       rl: {
         name: "RL-Umgebungen und Evals",
         title: "So bekommt jeder RL-Lauf eine frische Kopie seiner Umgebung",
-        lead: "Speichern Sie die Umgebung einmal. Jeder Lauf bekommt in Millisekunden seine eigene saubere Kopie, so bleiben Ergebnisse fair und auffällige Läufe lassen sich später öffnen.",
+        lead: "Speichern Sie die Umgebung einmal. Jeder Lauf bekommt in 10 ms seine eigene saubere Kopie, so bleiben Ergebnisse fair und auffällige Läufe lassen sich später öffnen.",
       },
       ci: {
         name: "CI und Builds",

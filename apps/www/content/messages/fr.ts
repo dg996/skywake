@@ -3,9 +3,9 @@ import type { HomeMessages } from "./types";
 export const fr: HomeMessages = {
   pages: {
     "/": {
-      title: "Skywake : filesystem et moteur de recherche évolutifs pour agents IA",
+      title: "Skywake : filesystem et recherche rapides sur S3 pour agents IA",
       description:
-        "Filesystem open source et recherche hybride sur votre bucket S3. Un workspace par agent en quelques millisecondes, monté comme un disque local.",
+        "Filesystem et recherche open source sur votre bucket S3. Montez comme un disque local, donnez à chaque agent IA sa copie en 10 ms et cherchez.",
     },
     "/filesystem": {
       title: "Filesystem S3 pour agents IA : monter, copier, fusionner",
@@ -69,7 +69,7 @@ export const fr: HomeMessages = {
   },
   hero: {
     badge: "Skywake Cloud arrive. Rejoignez la liste d'attente",
-    titleBefore: "Le filesystem et moteur de recherche évolutifs",
+    titleBefore: "Filesystem et recherche rapides",
     titleAccent: "pour agents IA.",
     screenshotAlt:
       "La console Skywake, avec les disques d'une équipe et les agents qui y travaillent",
@@ -78,8 +78,8 @@ export const fr: HomeMessages = {
   useCases: {
     label: "Cas d'usage",
     heading: [
-      "Concentrez-vous sur des agents de pointe.",
-      "Skywake s'occupe de la couche de données.",
+      "Vous construisez les agents.",
+      "Skywake gère les fichiers et la recherche.",
     ],
     more: "Voir tous les cas d'usage",
     cta: "En savoir plus",
@@ -128,7 +128,7 @@ export const fr: HomeMessages = {
         before: "Donnez à chaque agent ",
         highlight: "sa propre copie de vos fichiers",
         after:
-          ". Prête en quelques millisecondes, ouverte comme un dossier normal, fusionnée une fois le travail fini.",
+          ". Prête en 10 ms, ouverte comme un dossier normal, fusionnée une fois le travail fini.",
         points: [
           "20 000 fichiers copiés en 10 ms",
           "Ouverte sans tout télécharger",
@@ -224,11 +224,11 @@ export const fr: HomeMessages = {
       label: "Filesystem",
       title: "Votre bucket, comme un",
       accent: "disque local rapide.",
-      line: "Montez votre stockage objet comme un dossier normal. Donnez à chaque agent sa copie en quelques millisecondes, puis fusionnez les changements.",
+      line: "Montez votre stockage objet comme un dossier normal. Donnez à chaque agent sa copie en 10 ms, puis fusionnez les changements.",
       features: [
         {
           name: "Chaque agent a sa propre copie",
-          line: "Une copie complète de vos fichiers en quelques millisecondes, quelle que soit leur taille. Rien n'est dupliqué.",
+          line: "Une copie complète de vos fichiers en 10 ms, quelle que soit leur taille. Rien n'est dupliqué.",
           art: "fork",
         },
         {
@@ -601,7 +601,7 @@ export const fr: HomeMessages = {
   guides: {
     eyebrow: "Cas d'usage",
     title: "Partez de votre problème.",
-    accent: "On vous montre comment Skywake le règle.",
+    accent: "On vous montre comment Skywake s’y prête.",
     onThisPage: "Sur cette page",
     read: "Lire le guide",
     related: {
@@ -628,7 +628,7 @@ export const fr: HomeMessages = {
       "coding-agents": {
         name: "Agents de code dans le cloud",
         title: "Comment donner à chaque agent de code sa copie de votre repo",
-        lead: "Enregistrez votre repo une fois, avec ses paquets et son cache de build. Chaque agent a sa copie en quelques millisecondes, et vous fusionnez le correctif qui vous plaît.",
+        lead: "Enregistrez votre repo une fois, avec ses paquets et son cache de build. Chaque agent a sa copie en 10 ms, et vous fusionnez le correctif qui vous plaît.",
       },
       "document-agents": {
         name: "Agents de documents",
@@ -638,7 +638,7 @@ export const fr: HomeMessages = {
       rl: {
         name: "Environnements RL et évals",
         title: "Comment donner à chaque run RL une copie neuve de son environnement",
-        lead: "Enregistrez l'environnement une fois. Chaque run a sa propre copie propre en quelques millisecondes : des résultats équitables, et tout run bizarre peut être rouvert plus tard.",
+        lead: "Enregistrez l'environnement une fois. Chaque run a sa propre copie propre en 10 ms : des résultats équitables, et tout run bizarre peut être rouvert plus tard.",
       },
       ci: {
         name: "CI et builds",
