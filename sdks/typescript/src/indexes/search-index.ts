@@ -229,7 +229,7 @@ export class SearchIndex {
 
   /** Every document, a page at a time. */
   async *allDocuments(): AsyncGenerator<Document, void, undefined> {
-    for (let cursor: string | undefined; ;) {
+    for (let cursor: string | undefined; ; ) {
       const page = await this.documents({ limit: BATCH, cursor });
       yield* page.documents;
       if (!page.next) return;

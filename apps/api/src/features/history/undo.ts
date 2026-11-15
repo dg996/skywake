@@ -22,8 +22,9 @@ export async function revertEdits(engine: Engine, head: string, hash: string) {
     .map((change) => change.path)
     .filter((path) => since.some((change) => overlaps(change.path, path)));
   const parent = commit.parent;
-  const edits = changes.map(({ kind, path }): FileEdit =>
-    kind === "added" || !parent ? { path } : { path, from: { path, at: parent } },
+  const edits = changes.map(
+    ({ kind, path }): FileEdit =>
+      kind === "added" || !parent ? { path } : { path, from: { path, at: parent } },
   );
   return { commit, edits, conflicts };
 }
@@ -31,7 +32,7 @@ export async function revertEdits(engine: Engine, head: string, hash: string) {
 /** The edits that make the files at `head` what they were at `to`. */
 export async function resetEdits(engine: Engine, head: string, to: string) {
   const changes = await engine.diffCommits(to, head);
-  return changes.map(({ kind, path }): FileEdit =>
-    kind === "added" ? { path } : { path, from: { path, at: to } },
+  return changes.map(
+    ({ kind, path }): FileEdit => (kind === "added" ? { path } : { path, from: { path, at: to } }),
   );
 }

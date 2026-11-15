@@ -1,6 +1,8 @@
 # Python (the benchmarks): `scripts/format.sh` formats and lints with ruff.
 line-length = 120
 target-version = "py311"
+# Vendored code keeps its upstream formatting.
+extend-exclude = ["vendor"]
 
 [lint]
 # Errors, pyflakes, import order, modern syntax, common bugs.

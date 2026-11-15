@@ -23,9 +23,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   // The sidebar remembers whether it was open in a cookie.
   const sidebarOpen = (await cookies()).get("sidebar_state")?.value !== "false";
   const { id, name, email } = session.user;
-  const member = await membershipOf(() =>
-    auth.api.getActiveMember({ headers: requestHeaders }),
-  );
+  const member = await membershipOf(() => auth.api.getActiveMember({ headers: requestHeaders }));
   const role = member?.role ?? "member";
   return (
     <AuthOptionsProvider value={authOptions()}>

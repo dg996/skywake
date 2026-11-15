@@ -20,9 +20,9 @@ skywake merge agent-37 main -m "fix login"
 
 Over the API, [`GET .../branches/{branch}/diff?from=FROM`](/reference/api/history/diffBranches) takes an `against` parameter that sets what the branch is compared with:
 
-| `against`        | Compares the branch with                                                                           |
-| ---------------- | -------------------------------------------------------------------------------------------------- |
-| `head` (default) | `from` as it is now. Changes made on `from` since the fork show up too.                            |
+| `against`        | Compares the branch with                                                                              |
+| ---------------- | ----------------------------------------------------------------------------------------------------- |
+| `head` (default) | `from` as it is now. Changes made on `from` since the fork show up too.                               |
 | `base`           | The newest commit both share. Only what this branch changed shows up, as in `git diff from...branch`. |
 
 ## Review a fork

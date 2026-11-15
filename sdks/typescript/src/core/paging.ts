@@ -11,7 +11,7 @@ export async function* everything<T>(
   get: (page: Page) => Promise<T[]>,
   key: (item: T) => string,
 ): AsyncGenerator<T, void, undefined> {
-  for (let after: string | undefined; ;) {
+  for (let after: string | undefined; ; ) {
     const items = await get({ limit: PAGE, after });
     yield* items;
     if (items.length < PAGE) return;

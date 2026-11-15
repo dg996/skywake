@@ -151,7 +151,7 @@ test("writes patch, check conditions and delete by filter", async () => {
   });
   // 2 was deleted by the filter first; a missing document fails `lt`,
   // so its upsert is skipped. An upsert replaces every attribute.
-  assert.deepEqual(counts, { upserted: 1, patched: 1, deleted: 2 });
+  assert.deepEqual(counts, { upserted: 1, patched: 1, deleted: 2, missing: 0 });
   const left = await index.order("main", { by: "id", topK: 10, include: ["n", "tags"] });
   assert.deepEqual(left, [
     { id: 1, attributes: { n: 11 } },
@@ -172,11 +172,12 @@ test("a write returns the ids it changed when asked", async () => {
     upserted: 1,
     patched: 1,
     deleted: 2,
+    missing: 0,
     upsertedIds: [5],
     patchedIds: [1],
     deletedIds: [3, 99],
   });
-  assert.deepEqual(await write(false), { upserted: 1, patched: 1, deleted: 2 });
+  assert.deepEqual(await write(false), { upserted: 1, patched: 1, deleted: 2, missing: 0 });
 });
 
 test("uuid ids take any form and come back lowercase with dashes", async () => {
