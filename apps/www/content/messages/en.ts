@@ -87,8 +87,7 @@ export const en: HomeMessages = {
         icon: "files",
         before: "Give every agent ",
         highlight: "its own copy of your files",
-        after:
-          ". Ready in 10 ms, opened like a normal folder, merged back when the work is done.",
+        after: ". Ready in 10 ms, opened like a normal folder, merged back when the work is done.",
         points: [
           "Copy 20,000 files in 10 ms",
           "Open it without downloading everything",

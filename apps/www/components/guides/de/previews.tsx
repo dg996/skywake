@@ -69,8 +69,8 @@ export function PreviewsGuide({
         <SharedOrOwn />
         <p>
           In diesem Guide gehen wir einen anderen Weg. Die Daten Ihrer App liegen an einem Ort, auf
-          einem Branch namens <code>main</code>. Jeder Pull Request bekommt in 10 ms eine
-          eigene Kopie dieses Branches, denn{" "}
+          einem Branch namens <code>main</code>. Jeder Pull Request bekommt in 10 ms eine eigene
+          Kopie dieses Branches, denn{" "}
           <b>eine Kopie teilt hier die Dateien, statt sie zu duplizieren</b>. Die Preview kann ihre
           Kopie ändern, sogar kaputt machen, und <code>main</code> merkt nichts davon. Unterwegs
           finden wir außerdem den Euro-Bug.

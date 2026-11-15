@@ -123,8 +123,7 @@ export const it: HomeMessages = {
         icon: "files",
         before: "Dai a ogni agente ",
         highlight: "la sua copia dei tuoi file",
-        after:
-          ". Pronta in 10 ms, si apre come una cartella normale e si unisce a lavoro finito.",
+        after: ". Pronta in 10 ms, si apre come una cartella normale e si unisce a lavoro finito.",
         points: [
           "Copia 20,000 file in 10 ms",
           "Aprila senza scaricare tutto",

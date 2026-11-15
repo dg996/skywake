@@ -77,10 +77,7 @@ export const fr: HomeMessages = {
   },
   useCases: {
     label: "Cas d'usage",
-    heading: [
-      "Vous construisez les agents.",
-      "Skywake gère les fichiers et la recherche.",
-    ],
+    heading: ["Vous construisez les agents.", "Skywake gère les fichiers et la recherche."],
     more: "Voir tous les cas d'usage",
     cta: "En savoir plus",
     items: [

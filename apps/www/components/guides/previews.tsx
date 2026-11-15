@@ -66,10 +66,10 @@ export function PreviewsGuide({
         <SharedOrOwn />
         <p>
           In this guide we’ll do it another way. Your app’s data lives in one place, on a branch
-          called <code>main</code>. Each pull request gets its own copy of that branch, made in
-          10 ms, because <b>a copy here shares the files instead of duplicating them</b>. The
-          preview can change its copy, even break it, and <code>main</code> never notices. And we’ll
-          catch that euro bug on the way.
+          called <code>main</code>. Each pull request gets its own copy of that branch, made in 10
+          ms, because <b>a copy here shares the files instead of duplicating them</b>. The preview
+          can change its copy, even break it, and <code>main</code> never notices. And we’ll catch
+          that euro bug on the way.
         </p>
 
         <Chapter id="plan" title="What we’re building" />
