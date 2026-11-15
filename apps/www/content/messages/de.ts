@@ -69,7 +69,7 @@ export const de: HomeMessages = {
   },
   hero: {
     badge: "Skywake Cloud kommt. Zur Warteliste",
-    titleBefore: "Schnelles Dateisystem und Suche",
+    titleBefore: "Das skalierbare Dateisystem und die Suchmaschine",
     titleAccent: "für KI-Agenten.",
     screenshotAlt:
       "Die Skywake-Konsole mit den Disks eines Teams und den Agenten, die daran arbeiten",
