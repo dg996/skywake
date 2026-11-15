@@ -122,7 +122,7 @@ test("search scans a branch with no index, with globs and any case", { skip }, a
 test("search on a linked branch reads only files that can match, and sees unsynced changes", { skip }, async () => {
   const s = await server();
   const { key } = await linked(s);
-  await commit(s, key, [
+  const old = await commit(s, key, [
     { path: "src/server.ts", text: "export function handleRequest() {}\n// giraffe" },
     { path: "src/client.ts", text: "export function sendRequest() {}" },
     { path: "docs/guide.md", text: "the giraffe guide" },
@@ -151,6 +151,10 @@ test("search on a linked branch reads only files that can match, and sees unsync
     lines: ["notes/new.txt:1"],
     searched: "index",
   });
+  const then = { lines: ["docs/guide.md:1", "src/server.ts:2"], searched: "index" };
+  assert.deepEqual(await grep(s, key, { pattern: "giraffe", at: old }), then);
+  await s.services.syncer.drain();
+  assert.deepEqual(await grep(s, key, { pattern: "giraffe", at: old }), then);
 });
 
 test("search on a linked branch also sees what was written around the API", { skip }, async () => {

@@ -57,6 +57,9 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.1164.0
         version: 3.1164.0
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.17.0
+        version: 1.32.2(zod@4.6.7)
       '@skywake/bash':
         specifier: workspace:*
         version: link:../../packages/bash

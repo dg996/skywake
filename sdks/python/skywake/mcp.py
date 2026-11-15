@@ -36,7 +36,7 @@ from .errors import SkywakeError
 server = MCPServer("skywake")
 state = {}
 
-FILE_TOOLS = ["fork", "list_files", "read_file", "search", "write_files", "delete_files", "diff", "log", "merge"]
+FILE_TOOLS = ["fork", "list_files", "read_file", "search", "find_files", "write_files", "delete_files", "diff", "log", "merge"]
 WRITE_TOOLS = [
     "fork",
     "write_files",
