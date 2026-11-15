@@ -215,10 +215,9 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    # The npm token is given only to the publish steps, never to install or
-    # build steps, and publishing runs no package scripts.
-    env:
-      NPM_CONFIG_PROVENANCE: "true"
+    # npm trusted publishing: npm trades the job's OIDC token for a short-lived
+    # publish token, so no npm token is stored. Provenance is added on its own.
+    # Publishing runs no package scripts.
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
@@ -226,10 +225,12 @@ jobs:
           merge-multiple: true
           path: dist
       - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      # No registry-url: it would write a placeholder token to .npmrc.
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
-          node-version: 22
-          registry-url: https://registry.npmjs.org
+          node-version: 24
+      # Trusted publishing needs npm 11.5.1 or newer.
+      - run: npm install -g npm@11.21.2
       - name: Stage the CLI packages
         working-directory: packages/skywake-cli
         run: node scripts/stage.mjs "${GITHUB_REF_NAME#v}" ../../dist/skywake-linux-x64 ../../dist/skywake-linux-arm64
@@ -239,19 +240,16 @@ jobs:
           cd sdks/typescript
           npm version "${GITHUB_REF_NAME#v}" --no-git-tag-version --allow-same-version
           pnpm build
+          # pnpm packs it so workspace: versions are replaced; npm publishes it.
+          pnpm pack --pack-destination ../../dist-npm
       - name: Publish the CLI, platform packages first
         working-directory: packages/skywake-cli
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           for package in npm/linux-x64 npm/linux-arm64 .; do
             (cd "$package" && npm publish --access public --ignore-scripts)
           done
       - name: Publish the TypeScript SDK
-        working-directory: sdks/typescript
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: pnpm publish --access public --no-git-checks --ignore-scripts
+        run: npm publish dist-npm/skywake-sdk-*.tgz --access public --ignore-scripts
 
   pypi:
     name: PyPI (Python SDK)
