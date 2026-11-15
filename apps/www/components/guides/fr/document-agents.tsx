@@ -82,7 +82,7 @@ export function DocumentAgentsGuide({
             items={[
               "Le dossier d’un client enregistré et verrouillé, que même votre propre code ne peut pas modifier directement.",
               "Une clé d’agent qui n’accède qu’à ce seul client.",
-              "Une copie privée pour chaque run d’agent, prête en quelques millisecondes.",
+              "Une copie privée pour chaque run d’agent, prête en 10 ms.",
               "Une liste claire de ce que l’agent a changé, commit par commit et ligne par ligne.",
               "Une étape d’approbation que vous seul pouvez franchir, et un moyen de l’annuler plus tard.",
             ]}

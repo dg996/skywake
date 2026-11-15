@@ -72,7 +72,7 @@ export function RlGuide({ locale, title }: { locale: Locale; t: HomeMessages; ti
           <Checklist
             items={[
               "La tua suite di task salvata una volta, come punto di partenza bloccato.",
-              "Una copia nuova e privata per ogni rollout, creata in millisecondi.",
+              "Una copia nuova e privata per ogni rollout, creata in 10 ms.",
               "Tool che la policy chiama per leggere e scrivere file sulla sua copia.",
               "Un punteggio per ogni rollout, e l’elenco esatto di cosa ha cambiato.",
               "Reset che sono una sola delete, con i rollout anomali tenuti da parte per controllarli.",

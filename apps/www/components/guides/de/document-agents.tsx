@@ -82,7 +82,7 @@ export function DocumentAgentsGuide({
             items={[
               "Den Ordner eines Mandanten gespeichert und gesperrt, sodass nicht einmal Ihr eigener Code ihn direkt bearbeiten kann.",
               "Einen Agenten-Schlüssel, der nur diesen einen Mandanten erreicht.",
-              "Eine private Kopie für jeden Agenten-Lauf, in Millisekunden bereit.",
+              "Eine private Kopie für jeden Agenten-Lauf, in 10 ms bereit.",
               "Eine klare Liste der Änderungen des Agenten, Commit für Commit und Zeile für Zeile.",
               "Einen Freigabeschritt, den nur Sie ausführen können, und eine Möglichkeit, ihn später rückgängig zu machen.",
             ]}

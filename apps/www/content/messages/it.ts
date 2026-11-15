@@ -3,9 +3,9 @@ import type { HomeMessages } from "./types";
 export const it: HomeMessages = {
   pages: {
     "/": {
-      title: "Skywake: filesystem e motore di ricerca scalabili per agenti AI",
+      title: "Skywake: filesystem e ricerca veloci su S3 per agenti AI",
       description:
-        "Filesystem open source e ricerca ibrida sul tuo bucket S3. Un workspace per ogni agente in millisecondi, montato come un disco locale, con ricerca per significato o parola chiave.",
+        "Filesystem e ricerca open source sul tuo bucket S3. Monta come un disco locale, dai a ogni agente AI la sua copia in 10 ms e cerca.",
     },
     "/filesystem": {
       title: "Filesystem S3 per agenti AI: monta, copia e unisci",
@@ -76,7 +76,7 @@ export const it: HomeMessages = {
   },
   useCases: {
     label: "Casi d'uso",
-    heading: ["Tu pensa a costruire agenti all'avanguardia.", "Ai dati ci pensa Skywake."],
+    heading: ["Tu costruisci gli agenti.", "Skywake gestisce file e ricerca."],
     more: "Scopri tutti i casi d'uso",
     cta: "Scopri di più",
     items: [
@@ -123,8 +123,7 @@ export const it: HomeMessages = {
         icon: "files",
         before: "Dai a ogni agente ",
         highlight: "la sua copia dei tuoi file",
-        after:
-          ". Pronta in millisecondi, si apre come una cartella normale e si unisce a lavoro finito.",
+        after: ". Pronta in 10 ms, si apre come una cartella normale e si unisce a lavoro finito.",
         points: [
           "Copia 20,000 file in 10 ms",
           "Aprila senza scaricare tutto",
@@ -220,11 +219,11 @@ export const it: HomeMessages = {
       label: "Filesystem",
       title: "Il tuo bucket, come un",
       accent: "disco locale veloce.",
-      line: "Monta il tuo object storage come una cartella normale. Dai a ogni agente la sua copia in millisecondi, poi unisci le modifiche.",
+      line: "Monta il tuo object storage come una cartella normale. Dai a ogni agente la sua copia in 10 ms, poi unisci le modifiche.",
       features: [
         {
           name: "Ogni agente ha la sua copia",
-          line: "Una copia completa dei tuoi file in millisecondi, per quanto grandi siano. Senza duplicare nulla.",
+          line: "Una copia completa dei tuoi file in 10 ms, per quanto grandi siano. Senza duplicare nulla.",
           art: "fork",
         },
         {
@@ -597,7 +596,7 @@ export const it: HomeMessages = {
   guides: {
     eyebrow: "Casi d'uso",
     title: "Parti dal problema che hai.",
-    accent: "Ti mostriamo come lo risolve Skywake.",
+    accent: "Ecco come Skywake ci sta.",
     onThisPage: "In questa pagina",
     read: "Leggi la guida",
     related: { eyebrow: "Correlati", title: "Scopri altri casi d'uso.", all: "Tutti i casi d'uso" },
@@ -620,7 +619,7 @@ export const it: HomeMessages = {
       "coding-agents": {
         name: "Agenti di coding nel cloud",
         title: "Come dare a ogni agente di coding la sua copia del repo",
-        lead: "Salva il repo una volta, con pacchetti e cache di build. Ogni agente riceve la sua copia in millisecondi, e tu unisci la fix che preferisci.",
+        lead: "Salva il repo una volta, con pacchetti e cache di build. Ogni agente riceve la sua copia in 10 ms, e tu unisci la fix che preferisci.",
       },
       "document-agents": {
         name: "Agenti per documenti",
@@ -630,7 +629,7 @@ export const it: HomeMessages = {
       rl: {
         name: "Ambienti RL ed eval",
         title: "Come dare a ogni run di RL una copia pulita del suo ambiente",
-        lead: "Salva l’ambiente una volta. Ogni run riceve la sua copia pulita in millisecondi, così i risultati sono equi e ogni run anomalo si può riaprire dopo.",
+        lead: "Salva l’ambiente una volta. Ogni run riceve la sua copia pulita in 10 ms, così i risultati sono equi e ogni run anomalo si può riaprire dopo.",
       },
       ci: {
         name: "CI e build",

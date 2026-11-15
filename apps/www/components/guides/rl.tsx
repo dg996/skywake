@@ -71,7 +71,7 @@ export function RlGuide({ locale, title }: { locale: Locale; t: HomeMessages; ti
           <Checklist
             items={[
               "Your task suite saved once, as a locked starting point.",
-              "A fresh, private copy of it for every rollout, made in milliseconds.",
+              "A fresh, private copy of it for every rollout, made in 10 ms.",
               "Tools your policy calls to read and write files on its own copy.",
               "A score for each rollout, and a list of exactly what it changed.",
               "Resets that are one delete, with odd rollouts kept for a closer look.",

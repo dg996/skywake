@@ -40,7 +40,7 @@ export const en: HomeMessages = {
   },
   useCases: {
     label: "Use cases",
-    heading: ["You focus on building frontier agents.", "Let Skywake handle the data layer."],
+    heading: ["You build the agents.", "Skywake handles files and search."],
     more: "Explore all use cases",
     cta: "Learn more",
     items: [
@@ -87,8 +87,7 @@ export const en: HomeMessages = {
         icon: "files",
         before: "Give every agent ",
         highlight: "its own copy of your files",
-        after:
-          ". Ready in milliseconds, opened like a normal folder, merged back when the work is done.",
+        after: ". Ready in 10 ms, opened like a normal folder, merged back when the work is done.",
         points: [
           "Copy 20,000 files in 10 ms",
           "Open it without downloading everything",
@@ -184,11 +183,11 @@ export const en: HomeMessages = {
       label: "Filesystem",
       title: "Your bucket, as a",
       accent: "fast local disk.",
-      line: "Mount your object storage as a normal folder. Give each agent its own copy in milliseconds, then merge the changes back.",
+      line: "Mount your object storage as a normal folder. Give each agent its own copy in 10 ms, then merge the changes back.",
       features: [
         {
           name: "Every agent gets its own copy",
-          line: "A full copy of your files in milliseconds, however big they are. Nothing is duplicated.",
+          line: "A full copy of your files in 10 ms, whatever the size. Nothing is duplicated.",
           art: "fork",
         },
         {
@@ -561,7 +560,7 @@ export const en: HomeMessages = {
   guides: {
     eyebrow: "Use cases",
     title: "Start from the problem you have.",
-    accent: "We'll show how Skywake fixes it.",
+    accent: "We show how Skywake fits.",
     onThisPage: "On this page",
     read: "Read the guide",
     related: { eyebrow: "Related", title: "Explore more use cases.", all: "All use cases" },
@@ -584,7 +583,7 @@ export const en: HomeMessages = {
       "coding-agents": {
         name: "Cloud coding agents",
         title: "How to give each coding agent its own copy of your repo",
-        lead: "Save your repo once, with its packages and build cache. Each agent gets its own copy in milliseconds, and you merge the fix you like.",
+        lead: "Save your repo once, with its packages and build cache. Each agent gets its own copy in 10 ms, and you merge the fix you like.",
       },
       "document-agents": {
         name: "Document agents",
@@ -594,7 +593,7 @@ export const en: HomeMessages = {
       rl: {
         name: "RL environments and evals",
         title: "How to give every RL run a fresh copy of its environment",
-        lead: "Save the environment once. Each run gets its own clean copy in milliseconds, so results are fair and any odd run can be opened later.",
+        lead: "Save the environment once. Each run gets its own clean copy in 10 ms, so results are fair and any odd run can be opened later.",
       },
       ci: {
         name: "CI and builds",

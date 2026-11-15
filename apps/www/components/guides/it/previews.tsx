@@ -69,7 +69,7 @@ export function PreviewsGuide({
         <p>
           In questa guida facciamo diversamente. I dati della tua app stanno in un solo posto, su un
           branch chiamato <code>main</code>. Ogni pull request riceve la sua copia di quel branch,
-          creata in millisecondi, perché <b>qui una copia condivide i file invece di duplicarli</b>.
+          creata in 10 ms, perché <b>qui una copia condivide i file invece di duplicarli</b>.
           L’anteprima può modificare la sua copia, persino romperla, e <code>main</code> non se ne
           accorge. E strada facendo scoveremo quel bug degli euro.
         </p>
@@ -80,7 +80,7 @@ export function PreviewsGuide({
           <Checklist
             items={[
               "I dati della tua app salvati una volta, su un branch main che niente può modificare per sbaglio.",
-              "Una copia completa di quei dati per ogni pull request, creata in millisecondi.",
+              "Una copia completa di quei dati per ogni pull request, creata in 10 ms.",
               "Un’anteprima che gira sulla sua copia e può romperla senza rischi.",
               "Una chiave di sola lettura, così chi fa review guarda senza toccare.",
               "Una chiamata per pubblicare la modifica, e una per buttare via la copia.",
