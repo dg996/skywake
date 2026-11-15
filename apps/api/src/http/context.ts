@@ -21,6 +21,9 @@ import type { Allowlists } from "../features/orgs/allowlist.ts";
 import type { Models } from "../features/indexes/models.ts";
 import type { IndexUsage } from "../features/indexes/usage.ts";
 import type { Pinning } from "../features/pinning/service.ts";
+import type { Buckets } from "../features/environments/buckets.ts";
+import type { Syncer } from "../features/links/sync.ts";
+import type { Deleter } from "../features/deletions/worker.ts";
 import type { Log } from "./log.ts";
 import type { Metrics } from "./metrics.ts";
 import type { RateLimiter } from "./rate-limit.ts";
@@ -47,6 +50,9 @@ export interface Services {
   builds: Builds | null;
   audit: AuditRecorder;
   billing: Billing | null;
+  buckets: Buckets;
+  syncer: Syncer;
+  deleter: Deleter;
 }
 
 export type AppEnv = {

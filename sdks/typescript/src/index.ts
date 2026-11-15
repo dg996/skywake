@@ -13,7 +13,10 @@ export {
   type CommitOptions,
   type DiffOptions,
   type FileChange,
+  type FindOptions,
+  type ForkOptions,
   type ReadRange,
+  type SearchOptions,
   type TreeEntry,
 } from "./filesystem/branch.js";
 export type { CheckoutOptions, CommitFolderOptions } from "./filesystem/folders.js";

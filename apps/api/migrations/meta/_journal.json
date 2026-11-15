@@ -197,6 +197,27 @@
       "when": 1794472794065,
       "tag": "0027_query_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1794647712221,
+      "tag": "0028_byob_environments",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1794648288019,
+      "tag": "0029_index_links",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1794648625232,
+      "tag": "0030_deletions",
+      "breakpoints": true
     }
   ]
 }

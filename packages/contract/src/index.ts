@@ -9,6 +9,7 @@ import * as files from "./files.ts";
 import * as history from "./history.ts";
 import * as indexes from "./indexes/index.ts";
 import * as keys from "./keys.ts";
+import * as links from "./links.ts";
 import * as namespaces from "./namespaces.ts";
 import * as orgs from "./orgs.ts";
 import * as sessions from "./sessions.ts";
@@ -26,6 +27,7 @@ export {
   history,
   indexes,
   keys,
+  links,
   namespaces,
   orgs,
   sessions,
@@ -57,12 +59,23 @@ export const routes = {
     environments.listRegions,
     environments.listEnvironments,
     environments.createEnvironment,
+    environments.getStoreTrust,
+    environments.setEnvironmentStore,
+    environments.removeEnvironmentStore,
   ],
   namespaces: [
     namespaces.listNamespaces,
     namespaces.createNamespace,
     namespaces.getNamespace,
     namespaces.updateNamespace,
+    namespaces.deleteNamespace,
+  ],
+  links: [
+    links.linkIndex,
+    links.getIndexLink,
+    links.unlinkIndex,
+    links.getBranchIndex,
+    links.branchAdvanced,
   ],
   credentials: [credentials.createCredentials],
   branches: [
@@ -72,7 +85,14 @@ export const routes = {
     branches.updateBranch,
     branches.deleteBranch,
   ],
-  files: [files.listFiles, files.readFile, files.searchFiles, files.commitFiles, files.uploadPart],
+  files: [
+    files.listFiles,
+    files.readFile,
+    files.searchFiles,
+    files.findFiles,
+    files.commitFiles,
+    files.uploadPart,
+  ],
   history: [
     history.listCommits,
     history.listChanges,

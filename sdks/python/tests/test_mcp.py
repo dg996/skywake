@@ -74,7 +74,7 @@ def test_the_index_tools_have_tight_schemas():
     assert tools["search_index"].input_schema["required"] == ["index", "query"]
     assert tools["hybrid_search_index"].annotations.read_only_hint
     assert tools["delete_documents"].annotations.destructive_hint
-    for name in ["list_files", "read_file", "search", "diff", "log"]:
+    for name in ["list_files", "read_file", "search", "find_files", "diff", "log"]:
         assert tools[name].annotations.read_only_hint, name
     upsert = tools["upsert_documents"].input_schema
     assert upsert["properties"]["documents"]["maxItems"] == 1000

@@ -64,6 +64,23 @@ pub struct SearchMatch {
     pub text: String,
 }
 
+#[napi(object)]
+pub struct FoundPath {
+    pub path: String,
+    pub kind: String,
+    pub size: i64,
+}
+
+#[napi(object)]
+pub struct GrepOptions {
+    pub folder: Option<String>,
+    pub glob: Option<String>,
+    pub ignore_case: Option<bool>,
+    pub only: Option<Vec<String>>,
+    pub limit: Option<u32>,
+    pub at: Option<String>,
+}
+
 pub(crate) fn info(name: &str, entry: &Entry) -> FileInfo {
     let (kind, size, executable, target, modified_ns) = match entry {
         Entry::File {

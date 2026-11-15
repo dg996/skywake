@@ -14,14 +14,27 @@ class Branch:
     def _call(self, method, route, **kwargs):
         return self.namespace.sky.call(method, f"{self.path}{route}", **kwargs)
 
-    def fork(self, name, at=None):
+    def fork(self, name, at=None, with_index=False):
         """Forks this branch as `name`, at its head or at an older commit
-        `at`. No data is copied."""
+        `at`. No data is copied. `with_index` also forks the namespace's
+        linked index, which then follows the new branch."""
         body = {"name": name, "from": self.name}
         if at is not None:
             body["at"] = at
+        if with_index:
+            body["withIndex"] = True
         self.namespace.sky.call("POST", f"{self.namespace.path}/branches", json=body)
         return self.namespace.branch(name)
+
+    def index_status(self):
+        """How far this branch's linked index is behind its files."""
+        return self._call("GET", "/index").json()
+
+    def advanced(self):
+        """Tells the API the branch moved without it, such as a save written
+        straight to the bucket, so its linked index catches up within about
+        30 seconds."""
+        self._call("POST", "/advanced")
 
     def info(self):
         return self._call("GET", "").json()
@@ -64,10 +77,22 @@ class Branch:
     def read_text(self, path):
         return self.read(path).decode()
 
-    def search(self, pattern, path="", limit=100):
+    def search(self, pattern, path="", limit=100, glob=None, ignore_case=False, at=None):
         """Lines that match a regular expression, like `grep -rn`."""
-        params = {"pattern": pattern, "path": path, "limit": limit}
+        params = compact({
+            "pattern": pattern,
+            "path": path,
+            "limit": limit,
+            "glob": glob,
+            "ignoreCase": "true" if ignore_case else None,
+            "at": at,
+        })
         return self._call("GET", "/search", params=params).json()
+
+    def find(self, glob, path="", kind="any", limit=1000, at=None):
+        """Paths that match a glob, like `find -name`, without reading any file."""
+        params = compact({"glob": glob, "path": path, "kind": kind, "limit": limit, "at": at})
+        return self._call("GET", "/find", params=params).json()
 
     def commit(self, message, changes, session=None):
         """Applies changes as one commit and returns the new head. Each

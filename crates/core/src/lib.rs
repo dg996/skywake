@@ -21,11 +21,16 @@ pub use ops::diff::Change;
 pub use ops::files;
 pub use ops::ignore::{CACHES, IGNORE_FILE, ignored, is_ignored, parse_ignored};
 pub use ops::worktree::{INLINE_BUDGET, INLINE_MAX, store_file, store_file_reusing};
-pub use repo::{Claim, Content, Edit, Match, Merged, Repo, Resolution, Take};
+pub use repo::{
+    Chunks, Claim, Content, Edit, Found, Glob, GrepOptions, Match, Merged, Repo, Resolution, Take,
+    Wanted,
+};
 pub use store::gc::Collected;
 pub use store::gc::lock;
+pub use store::kind;
 pub use store::refs::wire as heads;
 pub use store::{
-    Bundler, Encryption, Head, HeadNodes, HeadsAt, Objects, Refs, Trees, bucket_folder,
-    granted_heads, open_store, open_store_with, remember_checks, valid_name,
+    Bundler, Encryption, Head, HeadNodes, HeadsAt, Objects, Refs, StoreKeys, Trees, bucket_folder,
+    forget_keys, granted_heads, open_store, open_store_keyed, open_store_with, remember_checks,
+    renew_keys, valid_name,
 };

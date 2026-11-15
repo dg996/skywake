@@ -39,6 +39,24 @@ export interface DiffOptions {
   against?: "head" | "base";
 }
 
+export interface ForkOptions {
+  /** Also fork the namespace's linked index, so it follows the new branch. */
+  withIndex?: boolean;
+}
+
+export interface SearchOptions extends At {
+  path?: string;
+  glob?: string;
+  ignoreCase?: boolean;
+  limit?: number;
+}
+
+export interface FindOptions extends At {
+  path?: string;
+  kind?: "any" | "files" | "folders";
+  limit?: number;
+}
+
 export class Branch {
   constructor(
     readonly namespace: Namespace,
@@ -53,15 +71,38 @@ export class Branch {
     return { namespace: this.namespace.name, branch: this.name };
   }
 
-  /** Forks this branch as `name`, at its head or at an older commit `at`. No data is copied. */
-  async fork(name: string, at?: string): Promise<Branch> {
+  /**
+   * Forks this branch as `name`, at its head or at an older commit `at`. No
+   * data is copied. `withIndex` also forks the namespace's linked index, which
+   * then follows the new branch.
+   */
+  async fork(name: string, at?: string, options: ForkOptions = {}): Promise<Branch> {
     unwrap(
       await this.client.POST("/namespaces/{namespace}/branches", {
         params: { path: { namespace: this.namespace.name } },
-        body: { name, from: this.name, at },
+        body: { name, from: this.name, at, withIndex: options.withIndex },
       }),
     );
     return this.namespace.branch(name);
+  }
+
+  /** How far this branch's linked index is behind its files. */
+  async indexStatus(): Promise<Schemas["BranchIndex"]> {
+    const params = { path: this.path };
+    return unwrap(
+      await this.client.GET("/namespaces/{namespace}/branches/{branch}/index", { params }),
+    );
+  }
+
+  /**
+   * Tells the API the branch moved without it, such as a save written straight
+   * to the bucket, so its linked index catches up within about 30 seconds.
+   */
+  async advanced(): Promise<void> {
+    const params = { path: this.path };
+    unwrap(
+      await this.client.POST("/namespaces/{namespace}/branches/{branch}/advanced", { params }),
+    );
   }
 
   async info(): Promise<Schemas["BranchInfo"]> {
@@ -142,13 +183,24 @@ export class Branch {
   }
 
   /** Finds lines that match a regular expression, like `grep -rn`. */
-  async search(
-    pattern: string,
-    options: { path?: string; limit?: number } = {},
-  ): Promise<Schemas["Match"][]> {
-    const params = { path: this.path, query: { pattern, ...options } };
+  async search(pattern: string, options: SearchOptions = {}): Promise<Schemas["Match"][]> {
+    const { ignoreCase, ...rest } = options;
+    const query = {
+      pattern,
+      ...rest,
+      ignoreCase: ignoreCase === undefined ? undefined : (`${ignoreCase}` as const),
+    };
+    const params = { path: this.path, query };
     return unwrap(
       await this.client.GET("/namespaces/{namespace}/branches/{branch}/search", { params }),
+    );
+  }
+
+  /** Finds paths by glob, like `find -name`, without reading any file. */
+  async find(glob: string, options: FindOptions = {}): Promise<Schemas["FoundPath"][]> {
+    const params = { path: this.path, query: { glob, ...options } };
+    return unwrap(
+      await this.client.GET("/namespaces/{namespace}/branches/{branch}/find", { params }),
     );
   }
 

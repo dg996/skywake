@@ -23,6 +23,18 @@ import type { ActorKind, Outcome } from "../audit/event.ts";
 
 type IndexSchema = contract.IndexSchema;
 
+/** How the API signs for a bucket a customer brings. No secret is kept in the clear. */
+export type StoreAccess =
+  | { type: "aws_role"; roleArn: string; externalId: string; region: string }
+  | {
+      type: "keys";
+      accessKeyId: string;
+      /** Sealed with SKYWAKE_API_SECRET_KEY (`security/sealed.ts`). */
+      secret: string;
+      endpoint: string | null;
+      region: string;
+    };
+
 const bytea = customType<{ data: Buffer }>({ dataType: () => "bytea" });
 const time = (name: string) => timestamp(name, { withTimezone: true });
 
@@ -85,6 +97,11 @@ export const environments = api.table(
   {
     org: text("org").notNull(),
     name: text("name").notNull(),
+    // A bucket the customer brings: every namespace and index made in the
+    // environment after it is set lives there. Null: the server's regions.
+    store: text("store"),
+    storeAccess: jsonb("store_access").$type<StoreAccess>(),
+    storeVerified: time("store_verified"),
     created: time("created").notNull().defaultNow(),
   },
   (table) => [
@@ -491,4 +508,116 @@ export const filesystemSizes = api.table(
     stale: boolean("stale").notNull().default(false),
   },
   (table) => [index("filesystem_sizes_by_org").on(table.org)],
+);
+
+// A namespace whose files an index keeps up with. One per namespace.
+export const indexLinks = api.table(
+  "index_links",
+  {
+    org: text("org").notNull(),
+    namespace: text("namespace").notNull(),
+    index: text("index").notNull(),
+    include: text("include").array().notNull().default(sql`'{}'`),
+    exclude: text("exclude").array().notNull().default(sql`'{}'`),
+    maxBytes: integer("max_bytes").notNull(),
+    created: time("created").notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ name: "index_links_pkey", columns: [table.org, table.namespace] }),
+    foreignKey({
+      name: "index_links_namespace_fkey",
+      columns: [table.org, table.namespace],
+      foreignColumns: [namespaces.org, namespaces.name],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "index_links_index_fkey",
+      columns: [table.org, table.index],
+      foreignColumns: [indexes.org, indexes.name],
+    }).onDelete("cascade"),
+  ],
+);
+
+// One linked branch: the commit its index branch matches, and whether it is
+// behind. Servers claim due rows with SKIP LOCKED; a claim that runs out is
+// taken again, so a server that dies mid-sync costs only time.
+export const indexLinkBranches = api.table(
+  "index_link_branches",
+  {
+    org: text("org").notNull(),
+    namespace: text("namespace").notNull(),
+    branch: text("branch").notNull(),
+    synced: text("synced"),
+    dirty: boolean("dirty").notNull().default(true),
+    due: time("due").notNull().defaultNow(),
+    checked: time("checked").notNull().defaultNow(),
+    claimedBy: text("claimed_by"),
+    claimedUntil: time("claimed_until"),
+    attempts: integer("attempts").notNull().default(0),
+    error: text("error"),
+    syncedAt: time("synced_at"),
+  },
+  (table) => [
+    primaryKey({
+      name: "index_link_branches_pkey",
+      columns: [table.org, table.namespace, table.branch],
+    }),
+    foreignKey({
+      name: "index_link_branches_link_fkey",
+      columns: [table.org, table.namespace],
+      foreignColumns: [indexLinks.org, indexLinks.namespace],
+    }).onDelete("cascade"),
+    index("index_link_branches_due")
+      .on(table.due)
+      .where(sql`dirty`),
+    index("index_link_branches_checked").on(table.checked),
+  ],
+);
+
+// Which index version matches which commit of a linked branch: how a search
+// pins a commit, and where an index fork starts.
+export const indexStamps = api.table(
+  "index_stamps",
+  {
+    org: text("org").notNull(),
+    index: text("index").notNull(),
+    branch: text("branch").notNull(),
+    commit: text("commit").notNull(),
+    version: text("version").notNull(),
+    at: time("at").notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({
+      name: "index_stamps_pkey",
+      columns: [table.org, table.index, table.branch, table.commit],
+    }),
+    foreignKey({
+      name: "index_stamps_index_fkey",
+      columns: [table.org, table.index],
+      foreignColumns: [indexes.org, indexes.name],
+    }).onDelete("cascade"),
+    index("index_stamps_newest").on(table.org, table.index, table.branch, table.at),
+  ],
+);
+
+// Data to delete from a bucket: a namespace's or index's folder whose row is
+// gone. No foreign key, so it outlives the row; the row's removal and this
+// insert are one statement, so a folder is never forgotten. Servers claim
+// rows with SKIP LOCKED and retry until the folder is empty.
+export const deletions = api.table(
+  "deletions",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    org: text("org").notNull(),
+    kind: text("kind").$type<"namespace" | "index">().notNull(),
+    name: text("name").notNull(),
+    region: text("region").notNull(),
+    folder: text("folder").notNull(),
+    due: time("due").notNull().defaultNow(),
+    claimedBy: text("claimed_by"),
+    claimedUntil: time("claimed_until"),
+    attempts: integer("attempts").notNull().default(0),
+    error: text("error"),
+    created: time("created").notNull().defaultNow(),
+  },
+  (table) => [index("deletions_due").on(table.due), index("deletions_region").on(table.region)],
 );

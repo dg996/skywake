@@ -9,6 +9,7 @@ import { changeable, readable } from "../../http/request.ts";
 import { admitsDownload, admitsFiles, downloaded, filesChanged } from "../billing/require.ts";
 import { whileWritable } from "../branches/protection.ts";
 import * as commits from "../history/commits.ts";
+import { grepIndexed } from "../links/grep.ts";
 import { assertLiveSession } from "../sessions/rules.ts";
 import * as parts from "./parts.ts";
 
@@ -75,12 +76,39 @@ export const filesFeature: Feature = {
 
     api.openapi(routes.searchFiles, async (c) => {
       const { namespace, branch } = c.req.valid("param");
-      const { pattern, path, limit } = c.req.valid("query");
+      const { pattern, path, glob, ignoreCase, at, limit } = c.req.valid("query");
       const ns = await readable(c, namespace);
-      return c.json(
-        await ns.engine.search(branch, pattern, path, clamp(limit, 100, 1, 10_000)),
-        200,
+      const asked = {
+        pattern,
+        folder: path,
+        glob,
+        ignoreCase: ignoreCase === "true",
+        at,
+        limit: clamp(limit, 100, 1, 10_000),
+      };
+      const indexed = await grepIndexed(c.var.services, ns, branch, asked);
+      if (indexed) {
+        c.header("skywake-searched", indexed.partial ? "index-partial" : "index");
+        return c.json(indexed.matches, 200);
+      }
+      c.header("skywake-searched", "scan");
+      const { folder, ...options } = asked;
+      return c.json(await ns.engine.grep(branch, pattern, { folder, ...options }), 200);
+    });
+
+    api.openapi(routes.findFiles, async (c) => {
+      const { namespace, branch } = c.req.valid("param");
+      const { glob, path, kind, at, limit } = c.req.valid("query");
+      const ns = await readable(c, namespace);
+      const found = await ns.engine.find(
+        branch,
+        glob,
+        path,
+        kind ?? "any",
+        clamp(limit, 1_000, 1, 100_000),
+        at,
       );
+      return c.json(found, 200);
     });
 
     api.openapi(routes.commitFiles, async (c) => {

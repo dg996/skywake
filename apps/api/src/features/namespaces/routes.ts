@@ -7,6 +7,8 @@ import type { Feature } from "../../http/context.ts";
 import { conflict, notFound } from "../../http/errors.ts";
 import { changeable, readable, signedIn } from "../../http/request.ts";
 import { admitsFilesystem } from "../billing/require.ts";
+import { removeAndDelete } from "../deletions/queries.ts";
+import { bucketFolder } from "../environments/buckets.ts";
 import * as environments from "../environments/queries.ts";
 import * as namespaces from "./queries.ts";
 
@@ -24,8 +26,9 @@ export const namespacesFeature: Feature = {
       allow(caller, "admin", name);
       await admitsFilesystem(c, caller.org);
       const { db, stores } = c.var.services;
-      const region = await environments.place(db, stores, caller.org, name, asked);
-      const folder = `${caller.org}/${randomId("ns_")}`;
+      const { region, own } = await environments.place(db, stores, caller.org, name, asked);
+      // In a customer's bucket the org folder is left out: the whole bucket is theirs.
+      const folder = own ? bucketFolder("fs", randomId("ns_")) : `${caller.org}/${randomId("ns_")}`;
       const created = await namespaces.create(db, {
         org: caller.org,
         name,
@@ -50,6 +53,17 @@ export const namespacesFeature: Feature = {
       const { visibility } = c.req.valid("json");
       await namespaces.setVisibility(c.var.services.db, ns.org, ns.name, visibility);
       note(c, { details: { visibility } });
+      return c.body(null, 204);
+    });
+
+    api.openapi(routes.deleteNamespace, async (c) => {
+      const { ns } = await changeable(c, c.req.valid("param").namespace, "admin");
+      const { db, stores } = c.var.services;
+      if (!(await removeAndDelete(db, "namespace", ns.org, ns.name))) {
+        throw notFound(`namespace \`${ns.name}\``);
+      }
+      stores.close(ns.folder);
+      note(c, { details: { namespace: ns.name } });
       return c.body(null, 204);
     });
   },

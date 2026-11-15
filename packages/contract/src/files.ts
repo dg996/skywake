@@ -98,6 +98,11 @@ export const searchFiles = createRoute({
   tags: ["files"],
   summary:
     "Finds lines that match a regular expression, like `grep -rn`. Skips binary files and files over 1 MiB.",
+  description:
+    "On a branch whose namespace has a linked index, only the files that hold every trigram the " +
+    "pattern needs are read, and files changed since the index last caught up are read too, so a " +
+    "search over a huge tree takes about as long as one over the files that can match. Such a " +
+    "search covers the files the link indexes; the `skywake-searched` header says `index` or `scan`.",
   security: signedInOrPublic,
   request: {
     params: BranchParams,
@@ -108,10 +113,56 @@ export const searchFiles = createRoute({
         .max(4096)
         .default("")
         .openapi({ description: "Search only under this folder." }),
+      glob: z.string().min(1).max(1000).optional().openapi({
+        description:
+          "Search only paths this glob matches. Without `/` it matches a name at any depth.",
+        example: "*.ts",
+      }),
+      ignoreCase: z.enum(["true", "false"]).optional().openapi({
+        description: "Match letters of either case. False by default.",
+      }),
+      at,
       limit: count("The most matches to return. 100 by default."),
     }),
   },
   responses: { 200: json(z.array(Match), "The matches."), ...errors(400, 401, 403, 404) },
+});
+
+export const FoundPath = z
+  .object({
+    path: z.string().openapi({ description: "From the root of the branch." }),
+    kind: z.enum(["file", "folder", "symlink"]),
+    size: z.number().int().openapi({ description: "In bytes, for a file. 0 otherwise." }),
+  })
+  .openapi("FoundPath");
+
+export const findFiles = createRoute({
+  method: "get",
+  path: "/namespaces/{namespace}/branches/{branch}/find",
+  operationId: "findFiles",
+  tags: ["files"],
+  summary: "Finds paths by name or glob, like `find` or `fd`, without reading any file.",
+  description:
+    "A glob without `/` matches a name at any depth (`*.ts`); with one it matches the whole " +
+    "path (`src/**/*.test.ts`). `*` and `?` stay within one folder, `**` crosses any number.",
+  security: signedInOrPublic,
+  request: {
+    params: BranchParams,
+    query: z.object({
+      glob: z.string().min(1).max(1000).openapi({ example: "**/*.md" }),
+      path: z
+        .string()
+        .max(4096)
+        .default("")
+        .openapi({ description: "Find only under this folder." }),
+      kind: z.enum(["any", "files", "folders"]).optional().openapi({
+        description: "`files` (with symlinks), `folders`, or `any` by default.",
+      }),
+      at,
+      limit: count("The most paths to return. 1,000 by default, at most 100,000."),
+    }),
+  },
+  responses: { 200: json(z.array(FoundPath), "The paths, in name order."), ...errors(400, 401, 403, 404) },
 });
 
 export const FileChange = z

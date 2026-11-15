@@ -40,6 +40,8 @@ export function policyFor(
       Condition: { StringLike: { "s3:prefix": [`${place.prefix}/*`] } },
     },
     { Effect: "Deny", Action: ["s3:PutObject"], Resource: [`${objects}/gc/*`] },
+    // The folder's kind keeps garbage collectors off it; only the API writes it.
+    { Effect: "Deny", Action: ["s3:PutObject"], Resource: [`${objects}/skywake.json`] },
   ];
   if (access === "write" && ownersHoldRefs) {
     statements.push({ Effect: "Deny", Action: ["s3:PutObject"], Resource: [`${objects}/refs/*`] });
@@ -52,6 +54,12 @@ export function policyFor(
     });
   }
   return { Version: "2012-10-17", Statement: statements };
+}
+
+/** A customer's role, for a namespace kept in their bucket. */
+export interface Role {
+  arn: string;
+  externalId: string;
 }
 
 export interface Minted {
@@ -85,8 +93,16 @@ export class Credentials {
     who: string,
     protectedBranches: string[] = [],
     ownersHoldRefs = false,
+    role?: Role,
   ): Promise<Minted> {
-    const key = JSON.stringify([who, place, access, [...protectedBranches].sort(), ownersHoldRefs]);
+    const key = JSON.stringify([
+      who,
+      place,
+      access,
+      [...protectedBranches].sort(),
+      ownersHoldRefs,
+      role ?? null,
+    ]);
     const kept = this.#kept.get(key);
     if (kept) {
       const minted = await kept.catch(() => null);
@@ -95,7 +111,7 @@ export class Credentials {
       if (this.#kept.get(key) === kept) this.#kept.delete(key);
     }
     if (this.#kept.size >= KEPT) this.#kept.delete(this.#kept.keys().next().value!);
-    const minting = this.#fresh(place, access, who, protectedBranches, ownersHoldRefs);
+    const minting = this.#fresh(place, access, who, protectedBranches, ownersHoldRefs, role);
     this.#kept.set(key, minting);
     minting.catch(() => this.#kept.get(key) === minting && this.#kept.delete(key));
     return minting;
@@ -107,10 +123,12 @@ export class Credentials {
     who: string,
     protectedBranches: string[],
     ownersHoldRefs: boolean,
+    role: Role | undefined,
   ): Promise<Minted> {
     const answer = await this.#sts.send(
       new AssumeRoleCommand({
-        RoleArn: this.#roleArn,
+        RoleArn: role?.arn ?? this.#roleArn,
+        ExternalId: role?.externalId,
         RoleSessionName: sessionName(who),
         DurationSeconds: this.#seconds,
         Policy: JSON.stringify(policyFor(place, access, protectedBranches, ownersHoldRefs)),

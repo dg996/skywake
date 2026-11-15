@@ -1,0 +1,63 @@
+{
+  "name": "@skywake/bash",
+  "version": "0.1.0",
+  "description": "A bash shell for AI agents over a Skywake branch, with rg, grep and find served by the API.",
+  "keywords": [
+    "skywake",
+    "bash",
+    "just-bash",
+    "ai-agents",
+    "ai-sdk",
+    "mcp",
+    "ripgrep",
+    "filesystem"
+  ],
+  "homepage": "https://skywake.dev/docs/agents/bash",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skywakehq/skywake.git",
+    "directory": "packages/bash"
+  },
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./ai": {
+      "types": "./dist/ai.d.ts",
+      "default": "./dist/ai.js"
+    }
+  },
+  "bin": {
+    "skywake-bash-mcp": "dist/mcp.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.0",
+    "@skywake/sdk": "workspace:*",
+    "just-bash": "^3.6.0",
+    "zod": "^4.6.7"
+  },
+  "peerDependencies": {
+    "ai": ">=5"
+  },
+  "peerDependenciesMeta": {
+    "ai": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@skywake/config": "workspace:*",
+    "@types/node": "^22",
+    "ai": "^6.0.0",
+    "typescript": "^5.8.3"
+  }
+}

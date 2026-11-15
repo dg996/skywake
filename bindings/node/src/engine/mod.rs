@@ -2,6 +2,7 @@
 
 mod commits;
 mod files;
+mod warm;
 
 use std::sync::Arc;
 
@@ -9,7 +10,7 @@ use napi::Result;
 use napi::bindgen_prelude::Buffer;
 use napi_derive::napi;
 use skywake_core::{
-    EXECUTABLE_MODE, Edit, Entry, FILE_MODE, HeadNodes, Merged, Repo, bucket_folder, open_store,
+    EXECUTABLE_MODE, Edit, Entry, FILE_MODE, HeadNodes, Merged, Repo, Wanted, bucket_folder,
 };
 
 use self::commits::{
@@ -17,7 +18,8 @@ use self::commits::{
     maybe_hash,
 };
 use self::files::{
-    FileChunk, FileEdit, Listing, MergeResolution, SearchMatch, content, info, resolution,
+    FileChunk, FileEdit, FoundPath, GrepOptions, Listing, MergeResolution, SearchMatch, content,
+    info, resolution,
 };
 use crate::error::{fail, failure, invalid};
 
@@ -30,6 +32,8 @@ pub struct Stored {
 #[napi(object)]
 pub struct EngineOpenOptions {
     pub heads: Option<bool>,
+    pub keys: Option<crate::StoreKeys>,
+    pub cache_folder: Option<String>,
 }
 
 fn head_nodes(location: &str) -> Result<HeadNodes> {
@@ -59,11 +63,19 @@ pub struct Engine {
 impl Engine {
     #[napi(factory)]
     pub fn open(location: String, options: Option<EngineOpenOptions>) -> Result<Self> {
-        let store = open_store(&location).map_err(fail)?;
+        let keys = options.as_ref().and_then(|options| options.keys.clone());
+        let keys = keys.map(skywake_core::StoreKeys::from);
+        let store = skywake_core::open_store_keyed(&location, None, keys.as_ref()).map_err(fail)?;
         let mut repo = Repo::new(store);
-        if options.and_then(|options| options.heads).unwrap_or(false) {
+        if options
+            .as_ref()
+            .and_then(|options| options.heads)
+            .unwrap_or(false)
+        {
             repo = repo.with_head_nodes(Arc::new(head_nodes(&location)?));
         }
+        let folder = options.and_then(|options| options.cache_folder);
+        let repo = warm::warmed(repo, &location, folder)?;
         Ok(Self { repo })
     }
 
@@ -169,6 +181,66 @@ impl Engine {
         let folder = folder.unwrap_or_default();
         let limit = limit.unwrap_or(100).clamp(1, 10_000) as usize;
         let found = self.repo.search(&branch, &folder, &pattern, limit).await;
+        Ok(found
+            .map_err(fail)?
+            .into_iter()
+            .map(|found| SearchMatch {
+                path: found.path,
+                line: found.line as u32,
+                text: found.text,
+            })
+            .collect())
+    }
+
+    #[napi]
+    pub async fn find(
+        &self,
+        branch: String,
+        glob: String,
+        folder: Option<String>,
+        wanted: Option<String>,
+        limit: Option<u32>,
+        at: Option<String>,
+    ) -> Result<Vec<FoundPath>> {
+        let wanted = match wanted.as_deref() {
+            None | Some("any") => Wanted::Any,
+            Some("files") => Wanted::Files,
+            Some("folders") => Wanted::Folders,
+            Some(other) => return Err(invalid(format!("`{other}` is not files or folders"))),
+        };
+        let limit = limit.unwrap_or(1_000).clamp(1, 100_000) as usize;
+        let folder = folder.unwrap_or_default();
+        let found = self
+            .repo
+            .find(&branch, maybe_hash(at)?, &folder, &glob, wanted, limit)
+            .await;
+        Ok(found
+            .map_err(fail)?
+            .into_iter()
+            .map(|found| FoundPath {
+                path: found.path,
+                kind: found.kind.to_string(),
+                size: found.size as i64,
+            })
+            .collect())
+    }
+
+    #[napi]
+    pub async fn grep(
+        &self,
+        branch: String,
+        pattern: String,
+        options: GrepOptions,
+    ) -> Result<Vec<SearchMatch>> {
+        let at = maybe_hash(options.at)?;
+        let options = skywake_core::GrepOptions {
+            folder: options.folder.unwrap_or_default(),
+            glob: options.glob,
+            ignore_case: options.ignore_case.unwrap_or(false),
+            only: options.only,
+            limit: options.limit.unwrap_or(100).clamp(1, 10_000) as usize,
+        };
+        let found = self.repo.grep(&branch, at, &pattern, &options).await;
         Ok(found
             .map_err(fail)?
             .into_iter()

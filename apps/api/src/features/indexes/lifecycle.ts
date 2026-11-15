@@ -7,7 +7,9 @@ import { allow, type Caller } from "../../auth/roles.ts";
 import type { Ctx } from "../../http/context.ts";
 import { conflict, forbidden, HttpError } from "../../http/errors.ts";
 import { admitsIndex, requires } from "../billing/require.ts";
+import { removeAndDelete } from "../deletions/queries.ts";
 import { indexFor, signedIn } from "../../http/request.ts";
+import { bucketFolder } from "../environments/buckets.ts";
 import * as environments from "../environments/queries.ts";
 import * as indexes from "./queries.ts";
 import {
@@ -46,8 +48,16 @@ export async function makeIndex(
   if (asked.encryption) await requires(c, caller.org, "customer_keys");
   if (asked.pinned) await requires(c, caller.org, "pinning");
   const { db, stores } = c.var.services;
-  const region = await environments.place(db, stores, caller.org, asked.name, asked.region);
-  const folder = `${caller.org}/indexes/${randomId("ix_")}`;
+  const { region, own } = await environments.place(
+    db,
+    stores,
+    caller.org,
+    asked.name,
+    asked.region,
+  );
+  const folder = own
+    ? bucketFolder("ix", randomId("ix_"))
+    : `${caller.org}/indexes/${randomId("ix_")}`;
   const row = {
     org: caller.org,
     name: asked.name,
@@ -59,7 +69,8 @@ export async function makeIndex(
     pinnedReplicas: asked.pinned?.replicas ?? null,
   };
   if (!(await indexes.create(db, row))) throw conflict(`index \`${asked.name}\` exists`);
-  const options = indexes.openOptions(row);
+  // A copy into a customer's bucket signs with that bucket's keys.
+  const options = { ...indexes.openOptions(row), keys: stores.keysOf(region) };
   try {
     const store = stores.index(region, folder, options);
     await fill({ store, location: stores.location(region, folder), options });
@@ -69,6 +80,17 @@ export async function makeIndex(
   }
   await indexes.addBranch(db, { org: caller.org, index: asked.name, name: MAIN }, null);
   return (await indexes.find(db, caller.org, asked.name))!;
+}
+
+/**
+ * Deletes an index: its row now, and its data from the bucket by the deletion
+ * queue, tried at once and retried until it is gone.
+ */
+export async function deleteIndex(c: Ctx, index: { org: string; name: string; folder: string }) {
+  const { db, stores, deleter } = c.var.services;
+  if (!(await removeAndDelete(db, "index", index.org, index.name))) return;
+  stores.close(index.folder);
+  void deleter.drain().catch(() => {});
 }
 
 export async function writable(

@@ -7,6 +7,7 @@ use std::time::Duration;
 use futures::try_join;
 use object_store::ObjectStore;
 
+use crate::cache::Scoped;
 use crate::error::missing;
 use crate::model::Packs;
 use crate::ops::diff::{self, Change};
@@ -14,21 +15,34 @@ use crate::ops::worktree;
 use crate::retry::{SAVE_ATTEMPTS, backoff};
 use crate::store::gc::lock;
 use crate::store::gc::{self, Collected};
+use crate::store::kind::{self, Kind};
 use crate::store::objects::commit_path;
 use crate::{Commit, Error, Hash, Head, Objects, Refs, Result, Tree, Trees};
 
+mod contents;
 mod files;
+mod find;
+mod glob;
+mod grep;
 mod history;
 mod merge;
 mod save;
+mod views;
 
-pub use files::{Content, Edit, Match};
+pub use contents::Chunks;
+pub use files::{Content, Edit};
+pub use find::{Found, Wanted};
+pub use glob::Glob;
+pub use grep::{GrepOptions, Match};
 pub use merge::{Merged, Resolution, Take};
 
 #[derive(Clone)]
 pub struct Repo {
     objects: Objects,
     refs: Refs,
+    chunks: Option<Chunks>,
+    memory: Option<Scoped>,
+    views: Arc<views::Views>,
 }
 
 impl Repo {
@@ -36,6 +50,9 @@ impl Repo {
         Self {
             objects: Objects::new(store.clone()),
             refs: Refs::new(store),
+            chunks: None,
+            memory: None,
+            views: Arc::default(),
         }
     }
 
@@ -49,6 +66,21 @@ impl Repo {
         &self.refs
     }
 
+    pub fn with_memory(mut self, objects: Scoped, contents: Scoped) -> Self {
+        self.objects = self.objects.with_memory(objects);
+        self.memory = Some(contents);
+        self
+    }
+
+    fn contents(&self) -> contents::Contents<'_> {
+        contents::Contents::new(&self.objects, self.chunks.as_ref(), self.memory.as_ref())
+    }
+
+    pub fn with_chunks(mut self, chunks: Chunks) -> Self {
+        self.chunks = Some(chunks);
+        self
+    }
+
     pub fn with_cache(mut self, dir: PathBuf) -> Self {
         self.objects = self.objects.with_cache(dir);
         self
@@ -58,6 +90,13 @@ impl Repo {
         let commit = match from {
             Some(source) => self.stored_head(source).await?.commit,
             None => {
+                // A branch from nothing is how a folder starts. Credentials scoped to
+                // the folder may not write the marker; GC marks such a folder later.
+                if let Err(error @ crate::Error::WrongKind(_)) =
+                    kind::mark(self.objects.store().as_ref(), Kind::Filesystem).await
+                {
+                    return Err(error);
+                }
                 let empty = Tree::new();
                 let packs = Packs {
                     recent: vec![empty.clone()],
@@ -166,7 +205,7 @@ impl Repo {
         self.refs.list().await
     }
 
-    async fn head(&self, branch: &str) -> Result<Head> {
+    pub(super) async fn head(&self, branch: &str) -> Result<Head> {
         self.refs
             .head(branch)
             .await?

@@ -59,6 +59,21 @@ export interface SearchMatch {
   text: string;
 }
 
+export interface FoundPath {
+  path: string;
+  kind: "file" | "folder" | "symlink";
+  size: number;
+}
+
+export interface GrepOptions {
+  folder?: Maybe<string>;
+  glob?: Maybe<string>;
+  ignoreCase?: Maybe<boolean>;
+  only?: Maybe<string[]>;
+  limit?: Maybe<number>;
+  at?: Maybe<string>;
+}
+
 export interface CommitInfo {
   hash: string;
   message: string;
@@ -135,6 +150,15 @@ export interface Engine {
     folder?: Maybe<string>,
     limit?: Maybe<number>,
   ): Promise<SearchMatch[]>;
+  find(
+    branch: string,
+    glob: string,
+    folder?: Maybe<string>,
+    wanted?: Maybe<"files" | "folders" | "any">,
+    limit?: Maybe<number>,
+    at?: Maybe<string>,
+  ): Promise<FoundPath[]>;
+  grep(branch: string, pattern: string, options: GrepOptions): Promise<SearchMatch[]>;
   commitFiles(
     branch: string,
     message: string,
@@ -178,7 +202,26 @@ export interface EngineOpenOptions {
    * serve the whole bucket of this `s3://` location.
    */
   heads?: Maybe<boolean>;
+  /** Keys for an `s3://` bucket the process has no credentials for. */
+  keys?: Maybe<StoreKeys>;
+  cacheFolder?: Maybe<string>;
 }
+
+/** Keys for a bucket the process has no credentials for, such as a customer's. Stores opened with the same `id` share them. */
+export interface StoreKeys {
+  id: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  sessionToken?: Maybe<string>;
+  /** An S3 compatible endpoint, such as R2's or MinIO's. AWS when unset. */
+  endpoint?: Maybe<string>;
+  region?: Maybe<string>;
+}
+
+/** Replaces the keys every store opened with `keys.id` signs with. */
+export declare function renewStoreKeys(keys: StoreKeys): void;
+/** Forgets keys no store should use any more. */
+export declare function forgetStoreKeys(id: string): void;
 
 export declare const Engine: {
   open(location: string, options?: Maybe<EngineOpenOptions>): Engine;
@@ -613,6 +656,8 @@ export interface IndexOpenOptions {
   cacheFolder?: string;
   /** Run a builder for every shard of each open branch: true when unset. False when servers split the building and each calls `buildShards`. */
   builders?: boolean;
+  /** Keys for an `s3://` bucket the process has no credentials for. */
+  keys?: StoreKeys;
 }
 
 /** Batches of documents; `next` gives `null` at the end. */
