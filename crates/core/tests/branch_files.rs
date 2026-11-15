@@ -477,3 +477,60 @@ async fn grep_searches_only_the_paths_it_is_given() {
     let paths: Vec<String> = found.into_iter().map(|m| m.path).collect();
     assert_eq!(paths, ["b.txt"]);
 }
+
+#[tokio::test]
+async fn a_limit_keeps_the_first_matches_in_path_order() {
+    use skywake_core::{GrepOptions, Wanted};
+    let repo = setup().await;
+    let edits = vec![
+        put("a/x.txt", "needle"),
+        put("a.txt", "needle"),
+        put("a-b.txt", "needle"),
+        put("b/c/d.txt", "needle\nneedle"),
+        put("B.txt", "needle"),
+    ];
+    repo.commit_files("main", "files", None, edits)
+        .await
+        .unwrap();
+    let grep = |limit| {
+        let repo = &repo;
+        async move {
+            let options = GrepOptions {
+                limit,
+                ..GrepOptions::default()
+            };
+            let found = repo.grep("main", None, "needle", &options).await.unwrap();
+            found
+                .into_iter()
+                .map(|m| (m.path, m.line))
+                .collect::<Vec<_>>()
+        }
+    };
+    let all = grep(100).await;
+    let mut sorted = all.clone();
+    sorted.sort();
+    assert_eq!(all, sorted);
+    assert_eq!(all.len(), 6);
+    for limit in 1..all.len() {
+        assert_eq!(grep(limit).await, all[..limit]);
+    }
+
+    let find = |limit| {
+        let repo = &repo;
+        async move {
+            let found = repo
+                .find("main", None, "", "*", Wanted::Any, limit)
+                .await
+                .unwrap();
+            found.into_iter().map(|f| f.path).collect::<Vec<_>>()
+        }
+    };
+    let paths = find(100).await;
+    let mut sorted = paths.clone();
+    sorted.sort();
+    assert_eq!(paths, sorted);
+    assert_eq!(paths.len(), 8);
+    for limit in 1..paths.len() {
+        assert_eq!(find(limit).await, paths[..limit]);
+    }
+}

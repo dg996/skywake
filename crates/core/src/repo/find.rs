@@ -1,5 +1,6 @@
 use super::glob::Glob;
 use crate::ops::files;
+use crate::ops::walk::Walk;
 use crate::{Entry, Error, Hash, Repo, Result};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -52,25 +53,15 @@ impl Repo {
             None => return Ok(Vec::new()),
         };
         let mut found = Vec::new();
-        let mut level = vec![(start, tree)];
-        while !level.is_empty() && found.len() <= limit {
-            let mut next = Vec::new();
-            for (prefix, tree) in files::load_level(&trees, level).await? {
-                for (name, entry) in tree.iter() {
-                    let path = join(&prefix, name);
-                    let (kind, size) = describe(entry);
-                    if let Entry::Dir { tree } = entry {
-                        next.push((path.clone(), *tree));
-                    }
-                    if wanted.keeps(kind) && glob.matches(&path) {
-                        found.push(Found { path, kind, size });
-                    }
-                }
+        let mut walk = Walk::new(&trees, &start, tree);
+        while found.len() < limit
+            && let Some((path, entry)) = walk.next().await?
+        {
+            let (kind, size) = describe(&entry);
+            if wanted.keeps(kind) && glob.matches(&path) {
+                found.push(Found { path, kind, size });
             }
-            level = next;
         }
-        found.sort_by(|a, b| a.path.cmp(&b.path));
-        found.truncate(limit);
         Ok(found)
     }
 }

@@ -5,6 +5,7 @@ use super::contents::Bytes;
 use super::find::join;
 use super::glob::Glob;
 use crate::ops::files;
+use crate::ops::walk::Walk;
 use crate::{Data, Entry, Error, Hash, Repo, Result, Trees};
 
 const FILE_MAX: u64 = 1 << 20;
@@ -77,28 +78,27 @@ impl Repo {
         let scope = Scope::new(options)?;
         let (root, trees) = self.tree_at(branch, at).await?;
         let candidates = match &options.only {
-            Some(paths) => listed(&trees, root, &scope, paths).await?,
-            None => everything(&trees, root, &scope).await?,
+            Some(paths) => {
+                Candidates::Listed(listed(&trees, root, &scope, paths).await?.into_iter())
+            }
+            None => Candidates::Walking(everything(&trees, root, &scope).await?, &scope),
         };
         self.lines(candidates, &pattern, options.limit).await
     }
 
     async fn lines(
         &self,
-        candidates: Vec<(String, Entry)>,
+        mut candidates: Candidates<'_>,
         pattern: &Regex,
         limit: usize,
     ) -> Result<Vec<Match>> {
         let contents = self.contents();
-        let texts: Vec<(String, Data, u64)> = candidates
-            .into_iter()
-            .filter_map(|(path, entry)| match entry {
-                Entry::File { size, data, .. } if size <= FILE_MAX => Some((path, data, size)),
-                _ => None,
-            })
-            .collect();
         let mut found = Vec::new();
-        for batch in batches(texts) {
+        while found.len() < limit {
+            let batch = candidates.batch().await?;
+            if batch.is_empty() {
+                break;
+            }
             let loaded = contents.load(batch).await?;
             let pattern = pattern.clone();
             let wanted = limit - found.len();
@@ -106,28 +106,46 @@ impl Repo {
                 .await
                 .map_err(|error| Error::Io(std::io::Error::other(error)))?;
             found.extend(matched);
-            if found.len() >= limit {
-                break;
-            }
         }
         Ok(found)
     }
 }
 
-fn batches(texts: Vec<(String, Data, u64)>) -> Vec<Vec<(String, Data)>> {
-    let mut batches = vec![Vec::new()];
-    let mut bytes = 0;
-    for (path, data, size) in texts {
-        if bytes >= BATCH_BYTES {
-            batches.push(Vec::new());
-            bytes = 0;
-        }
-        bytes += size;
-        if let Some(batch) = batches.last_mut() {
-            batch.push((path, data));
+enum Candidates<'a> {
+    Listed(std::vec::IntoIter<(String, Entry)>),
+    Walking(Walk<'a>, &'a Scope),
+}
+
+impl Candidates<'_> {
+    async fn next(&mut self) -> Result<Option<(String, Entry)>> {
+        match self {
+            Candidates::Listed(listed) => Ok(listed.next()),
+            Candidates::Walking(walk, scope) => {
+                while let Some((path, entry)) = walk.next().await? {
+                    if scope.wanted(&path) {
+                        return Ok(Some((path, entry)));
+                    }
+                }
+                Ok(None)
+            }
         }
     }
-    batches
+
+    async fn batch(&mut self) -> Result<Vec<(String, Data)>> {
+        let mut batch = Vec::new();
+        let mut bytes = 0;
+        while bytes < BATCH_BYTES
+            && let Some((path, entry)) = self.next().await?
+        {
+            if let Entry::File { size, data, .. } = entry
+                && size <= FILE_MAX
+            {
+                bytes += size;
+                batch.push((path, data));
+            }
+        }
+        Ok(batch)
+    }
 }
 
 fn scan(files: &[(String, Bytes)], pattern: &Regex, limit: usize) -> Vec<Match> {
@@ -208,21 +226,15 @@ fn matching_lines(text: &[u8], pattern: &Regex, mut each: impl FnMut(usize, &[u8
     }
 }
 
-async fn everything(trees: &Trees, root: Hash, scope: &Scope) -> Result<Vec<(String, Entry)>> {
+async fn everything<'a>(trees: &'a Trees, root: Hash, scope: &Scope) -> Result<Walk<'a>> {
     if scope.folder.is_empty() {
         trees.prefetch().await;
     }
-    let tree = match files::find(trees, root, &scope.folder).await? {
-        Some(Entry::Dir { tree }) => tree,
-        Some(_) => return Err(Error::NotAFolder(scope.folder.clone())),
-        None => return Err(Error::NotFound(scope.folder.clone())),
-    };
-    Ok(files::walk(trees, tree)
-        .await?
-        .into_iter()
-        .map(|(path, entry)| (join(&scope.folder, &path), entry))
-        .filter(|(path, _)| scope.wanted(path))
-        .collect())
+    match files::find(trees, root, &scope.folder).await? {
+        Some(Entry::Dir { tree }) => Ok(Walk::new(trees, &scope.folder, tree)),
+        Some(_) => Err(Error::NotAFolder(scope.folder.clone())),
+        None => Err(Error::NotFound(scope.folder.clone())),
+    }
 }
 
 async fn listed(

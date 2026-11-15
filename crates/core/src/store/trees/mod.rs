@@ -25,6 +25,7 @@ const ENTRY_MIN: usize = 4;
 
 const PARALLELISM: usize = 16;
 const PREFETCH_AT_ONCE: usize = 64;
+const PREFETCH_MAX: usize = 64;
 const LISTED_MAX: usize = 256;
 
 const PARTS_KEPT: usize = 256;
@@ -43,6 +44,7 @@ struct Known {
     stored_parts: HashSet<Hash>,
     part_trees: HashMap<Hash, Arc<Tree>>,
     inside: HashMap<Hash, Vec<(Hash, Hash)>>,
+    entries: usize,
     loads: HashMap<Hash, Arc<OnceCell<()>>>,
     since: Option<SystemTime>,
 }
@@ -64,7 +66,7 @@ impl Trees {
         for tree in &packs.recent {
             let hash = Objects::address(tree)?;
             check_names(hash, tree)?;
-            known.trees.insert(hash, Arc::new(tree.clone()));
+            known.hold(hash, Arc::new(tree.clone()));
         }
         Ok(Self {
             objects,
@@ -74,10 +76,7 @@ impl Trees {
 
     pub fn add(&self, tree: Tree) -> Result<Hash> {
         let hash = Objects::address(&tree)?;
-        self.lock()
-            .trees
-            .entry(hash)
-            .or_insert_with(|| Arc::new(tree));
+        self.lock().hold(hash, Arc::new(tree));
         Ok(hash)
     }
 
@@ -99,7 +98,7 @@ impl Trees {
         self.started(since);
         let mut known = self.lock();
         for (hash, tree) in trees {
-            known.trees.entry(hash).or_insert(tree);
+            known.hold(hash, tree);
         }
         for (hash, pack) in packs {
             known.packs.entry(hash).or_insert(pack);
@@ -242,13 +241,14 @@ impl Trees {
 
     pub async fn prefetch(&self) {
         let mut asked = HashSet::new();
-        loop {
+        while asked.len() < PREFETCH_MAX {
             let todo: Vec<(Hash, Arc<OnceCell<()>>)> = {
                 let mut known = self.lock();
                 let packs: HashSet<Hash> = known.packs.values().copied().collect();
-                packs
-                    .into_iter()
-                    .filter(|pack| asked.insert(*pack))
+                let room = PREFETCH_MAX - asked.len();
+                let new: Vec<Hash> = packs.difference(&asked).copied().take(room).collect();
+                asked.extend(&new);
+                new.into_iter()
                     .map(|pack| (pack, known.loads.entry(pack).or_default().clone()))
                     .collect()
             };
@@ -300,7 +300,7 @@ impl Trees {
         let mut known = self.lock();
         for (hash, tree) in loaded.trees {
             known.packs.entry(hash).or_insert(pack);
-            known.trees.entry(hash).or_insert_with(|| Arc::new(tree));
+            known.hold(hash, Arc::new(tree));
         }
         for (hash, parts) in loaded.sharded {
             known.packs.entry(hash).or_insert(pack);
@@ -325,10 +325,7 @@ impl Trees {
             tree.extend(part);
         }
         check(hash, &tree)?;
-        self.lock()
-            .trees
-            .entry(hash)
-            .or_insert_with(|| Arc::new(tree));
+        self.lock().hold(hash, Arc::new(tree));
         Ok(())
     }
 
@@ -396,9 +393,11 @@ impl Trees {
             packs,
             parts,
             stored_parts,
+            entries,
             ..
         } = &mut *known;
         trees.retain(|hash, _| used.contains(hash));
+        *entries = trees.values().map(|tree| tree.len()).sum();
         packs.retain(|hash, _| used.contains(hash));
         parts.retain(|hash, _| used.contains(hash));
         *stored_parts = parts
@@ -407,6 +406,14 @@ impl Trees {
             .collect();
         known.since = Some(SystemTime::now());
         Ok(())
+    }
+
+    pub fn entries(&self) -> usize {
+        self.lock().entries
+    }
+
+    pub fn cached(&self, hash: Hash) -> Option<Arc<Tree>> {
+        self.lock().trees.get(&hash).cloned()
     }
 
     pub(crate) fn since(&self) -> SystemTime {
@@ -438,6 +445,13 @@ fn fits<'a>(trees: impl Iterator<Item = &'a Tree>) -> Result<bool> {
 }
 
 impl Known {
+    fn hold(&mut self, hash: Hash, tree: Arc<Tree>) {
+        if let std::collections::hash_map::Entry::Vacant(slot) = self.trees.entry(hash) {
+            self.entries += tree.len();
+            slot.insert(tree);
+        }
+    }
+
     fn since(&self) -> SystemTime {
         self.since.unwrap_or(UNIX_EPOCH)
     }

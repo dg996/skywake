@@ -158,15 +158,18 @@ test("servers never claim one branch twice, and take back a lapsed claim", { ski
   const [a, b] = await Promise.all([links.claim(db, "a", 2), links.claim(db, "b", 2)]);
   const claimed = [...a, ...b].map((row) => row.branch);
   assert.equal(new Set(claimed).size, claimed.length);
+  // Either claim may lock every candidate first and leave the other empty.
+  const [died, held] = a.length > 0 ? ["a", a] : ["b", b];
+  assert.ok(held.length > 0);
   // A server that died leaves its claim to run out; then another takes the branch.
   await db.execute(
-    sql`UPDATE api.index_link_branches SET claimed_until = now() - interval '1 second', dirty = true, due = now() - interval '1 minute' WHERE ${mine} AND claimed_by = 'a'`,
+    sql`UPDATE api.index_link_branches SET claimed_until = now() - interval '1 second', dirty = true, due = now() - interval '1 minute' WHERE ${mine} AND claimed_by = ${died}`,
   );
   const again = await links.claim(db, "c", 10);
-  for (const row of a) assert.ok(again.some((taken) => taken.branch === row.branch));
+  for (const row of held) assert.ok(again.some((taken) => taken.branch === row.branch));
   // A claim another server holds now can no longer be finished by the one that lost it.
-  const lost = a[0]!;
-  await links.synced(db, lost, "a", "x");
+  const lost = held[0]!;
+  await links.synced(db, lost, died, "x");
   assert.equal((await links.branch(db, id, "prod/app", lost.branch))!.claimedBy, "c");
 });
 
