@@ -69,7 +69,7 @@ export function PreviewsGuide({
         <p>
           En esta guía lo haremos de otra forma. Los datos de tu app viven en un solo sitio, en una
           rama llamada <code>main</code>. Cada pull request recibe su propia copia de esa rama,
-          creada en milisegundos, porque{" "}
+          creada en 10 ms, porque{" "}
           <b>aquí una copia comparte los archivos en lugar de duplicarlos</b>. La preview puede
           cambiar su copia, incluso romperla, y <code>main</code> ni se entera. Y de paso
           atraparemos ese bug de los euros.
@@ -81,7 +81,7 @@ export function PreviewsGuide({
           <Checklist
             items={[
               "Los datos de tu app guardados una vez, en una rama main que nada puede cambiar por accidente.",
-              "Una copia completa de esos datos para cada pull request, creada en milisegundos.",
+              "Una copia completa de esos datos para cada pull request, creada en 10 ms.",
               "Una preview que se ejecuta sobre su copia y puede romperla sin riesgo.",
               "Una key de solo lectura, para que quien revisa pueda mirar sin tocar.",
               "Una llamada para publicar el cambio y otra para tirar la copia.",

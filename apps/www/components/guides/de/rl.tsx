@@ -73,7 +73,7 @@ export function RlGuide({ locale, title }: { locale: Locale; t: HomeMessages; ti
           <Checklist
             items={[
               "Ihre Task-Suite, einmal gespeichert als gesperrter Startpunkt.",
-              "Eine frische, private Kopie davon für jeden Rollout, in Millisekunden erstellt.",
+              "Eine frische, private Kopie davon für jeden Rollout, in 10 ms erstellt.",
               "Tools, mit denen Ihre Policy Dateien auf ihrer eigenen Kopie liest und schreibt.",
               "Einen Score für jeden Rollout und eine Liste dessen, was er genau geändert hat.",
               "Zurücksetzen mit einem einzigen Löschen, wobei auffällige Rollouts zur genaueren Prüfung erhalten bleiben.",

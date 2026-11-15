@@ -79,7 +79,7 @@ export function DocumentAgentsGuide({
             items={[
               "A client’s folder saved and locked, so not even your own code can edit it directly.",
               "An agent key that can reach only that one client.",
-              "A private copy for each agent run, ready in milliseconds.",
+              "A private copy for each agent run, ready in 10 ms.",
               "A clear list of what the agent changed, commit by commit and line by line.",
               "One approve step that only you can take, and a way to undo it later.",
             ]}
