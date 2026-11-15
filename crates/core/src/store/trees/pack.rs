@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use postcard::experimental::serialized_size;
 
-use super::{ENTRY_MIN, Known, Layout, folders, missing};
+use super::{ENTRY_MIN, Known, LISTED_MAX, Layout, folders, missing};
 use crate::model::{Pack, Packs};
 use crate::{Hash, Objects, Result, Tree};
 
@@ -54,9 +54,13 @@ impl<'a> Packer<'a> {
             true => (0, bytes),
             false => (current.written + bytes, current.repacked),
         };
+        let mut packed = vec![(root, pack)];
+        if let Some(top) = self.new.last() {
+            packed.extend(top.packed.iter().copied().take(LISTED_MAX - 1));
+        }
         let packs = Packs {
             recent: Vec::new(),
-            packed: vec![(root, pack)],
+            packed,
             written,
             repacked,
         };

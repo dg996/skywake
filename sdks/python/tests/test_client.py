@@ -200,3 +200,19 @@ def test_a_fork_can_start_at_an_older_commit():
     transport, seen = fake([httpx.Response(201, json={"name": "old"})])
     client(transport).namespace("app").branch("main").fork("old", at="c0ffee")
     assert json.loads(seen[0].content) == {"name": "old", "from": "main", "at": "c0ffee"}
+
+
+def test_find_and_search_send_only_what_is_given():
+    transport, seen = fake([httpx.Response(200, json=[])])
+    branch = client(transport).namespace("prod/app").branch("main")
+    branch.find("*.ts", kind="files")
+    branch.search("todo", glob="src/**", ignore_case=True)
+    assert seen[0].url.raw_path.decode().startswith("/v1/namespaces/prod%2Fapp/branches/main/find?")
+    assert dict(seen[0].url.params) == {"glob": "*.ts", "path": "", "kind": "files", "limit": "1000"}
+    assert dict(seen[1].url.params) == {
+        "pattern": "todo",
+        "path": "",
+        "limit": "100",
+        "glob": "src/**",
+        "ignoreCase": "true",
+    }

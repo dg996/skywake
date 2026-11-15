@@ -21,7 +21,10 @@ pub use ops::diff::Change;
 pub use ops::files;
 pub use ops::ignore::{CACHES, IGNORE_FILE, ignored, is_ignored, parse_ignored};
 pub use ops::worktree::{INLINE_BUDGET, INLINE_MAX, store_file, store_file_reusing};
-pub use repo::{Claim, Content, Edit, Match, Merged, Repo, Resolution, Take};
+pub use repo::{
+    Chunks, Claim, Content, Edit, Found, Glob, GrepOptions, Match, Merged, Repo, Resolution, Take,
+    Wanted,
+};
 pub use store::gc::Collected;
 pub use store::gc::lock;
 pub use store::kind;

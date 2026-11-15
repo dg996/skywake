@@ -59,6 +59,21 @@ export interface SearchMatch {
   text: string;
 }
 
+export interface FoundPath {
+  path: string;
+  kind: "file" | "folder" | "symlink";
+  size: number;
+}
+
+export interface GrepOptions {
+  folder?: Maybe<string>;
+  glob?: Maybe<string>;
+  ignoreCase?: Maybe<boolean>;
+  only?: Maybe<string[]>;
+  limit?: Maybe<number>;
+  at?: Maybe<string>;
+}
+
 export interface CommitInfo {
   hash: string;
   message: string;
@@ -135,6 +150,15 @@ export interface Engine {
     folder?: Maybe<string>,
     limit?: Maybe<number>,
   ): Promise<SearchMatch[]>;
+  find(
+    branch: string,
+    glob: string,
+    folder?: Maybe<string>,
+    wanted?: Maybe<"files" | "folders" | "any">,
+    limit?: Maybe<number>,
+    at?: Maybe<string>,
+  ): Promise<FoundPath[]>;
+  grep(branch: string, pattern: string, options: GrepOptions): Promise<SearchMatch[]>;
   commitFiles(
     branch: string,
     message: string,
@@ -180,6 +204,7 @@ export interface EngineOpenOptions {
   heads?: Maybe<boolean>;
   /** Keys for an `s3://` bucket the process has no credentials for. */
   keys?: Maybe<StoreKeys>;
+  cacheFolder?: Maybe<string>;
 }
 
 /** Keys for a bucket the process has no credentials for, such as a customer's. Stores opened with the same `id` share them. */

@@ -37,6 +37,7 @@ function linkSchema(embed: { model: string; dims: number } | undefined) {
     attributes: [
       { name: "path", type: "string" },
       { name: "text", type: "text" },
+      { name: "grams", type: "text", language: "none", stemming: false },
       ...(embed ? [{ name: "summary", type: "string" }] : []),
     ],
     vectors: embed

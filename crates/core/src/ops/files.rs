@@ -1,5 +1,6 @@
 //! Reads and changes single files of a stored tree, with no local folder.
 
+use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use fastcdc::v2020::FastCDC;
@@ -10,6 +11,7 @@ use crate::ops::worktree::{AVG_CHUNK, INLINE_MAX, MAX_CHUNK, MIN_CHUNK};
 use crate::{Chunk, Data, Entry, Error, Hash, Objects, Result, Tree, Trees, permissions};
 
 const PARALLELISM: usize = 16;
+const LEVEL_AT_ONCE: usize = 64;
 
 pub fn parts(path: &str) -> Result<Vec<&str>> {
     let path = path.trim_matches('/');
@@ -73,18 +75,33 @@ pub async fn put(trees: &Trees, root: Hash, path: &str, entry: Option<Entry>) ->
 
 pub async fn walk(trees: &Trees, root: Hash) -> Result<Vec<(String, Entry)>> {
     let mut found = Vec::new();
-    let mut todo = vec![(String::new(), root)];
-    while let Some((prefix, tree)) = todo.pop() {
-        for (name, entry) in trees.get(tree).await?.iter() {
-            let path = format!("{prefix}{name}");
-            match entry {
-                Entry::Dir { tree } => todo.push((format!("{path}/"), *tree)),
-                _ => found.push((path, entry.clone())),
+    let mut level = vec![(String::new(), root)];
+    while !level.is_empty() {
+        let mut next = Vec::new();
+        for (prefix, tree) in load_level(trees, level).await? {
+            for (name, entry) in tree.iter() {
+                let path = format!("{prefix}{name}");
+                match entry {
+                    Entry::Dir { tree } => next.push((format!("{path}/"), *tree)),
+                    _ => found.push((path, entry.clone())),
+                }
             }
         }
+        level = next;
     }
     found.sort_by(|a, b| a.0.cmp(&b.0));
     Ok(found)
+}
+
+pub async fn load_level(
+    trees: &Trees,
+    level: Vec<(String, Hash)>,
+) -> Result<Vec<(String, Arc<Tree>)>> {
+    stream::iter(level)
+        .map(|(prefix, tree)| async move { Ok::<_, Error>((prefix, trees.get(tree).await?)) })
+        .buffered(LEVEL_AT_ONCE)
+        .try_collect()
+        .await
 }
 
 pub async fn read(objects: &Objects, data: &Data, offset: u64, len: u64) -> Result<Vec<u8>> {

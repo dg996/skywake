@@ -1844,6 +1844,32 @@
           "text"
         ]
       },
+      "FoundPath": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "From the root of the branch."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "file",
+              "folder",
+              "symlink"
+            ]
+          },
+          "size": {
+            "type": "integer",
+            "description": "In bytes, for a file. 0 otherwise."
+          }
+        },
+        "required": [
+          "path",
+          "kind",
+          "size"
+        ]
+      },
       "Committed": {
         "type": "object",
         "properties": {
@@ -9091,6 +9117,7 @@
           "files"
         ],
         "summary": "Finds lines that match a regular expression, like `grep -rn`. Skips binary files and files over 1 MiB.",
+        "description": "On a branch whose namespace has a linked index, only the files that hold every trigram the pattern needs are read, and files changed since the index last caught up are read too, so a search over a huge tree takes about as long as one over the files that can match. Such a search covers the files the link indexes; the `skywake-searched` header says `index` or `scan`.",
         "security": [
           {
             "bearer": []
@@ -9144,6 +9171,44 @@
           },
           {
             "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000,
+              "description": "Search only paths this glob matches. Without `/` it matches a name at any depth.",
+              "example": "*.ts"
+            },
+            "required": false,
+            "description": "Search only paths this glob matches. Without `/` it matches a name at any depth.",
+            "name": "glob",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "description": "Match letters of either case. False by default."
+            },
+            "required": false,
+            "description": "Match letters of either case. False by default.",
+            "name": "ignoreCase",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$",
+              "description": "Read an older commit of the branch instead of its head."
+            },
+            "required": false,
+            "description": "Read an older commit of the branch instead of its head.",
+            "name": "at",
+            "in": "query"
+          },
+          {
+            "schema": {
               "type": [
                 "integer",
                 "null"
@@ -9165,6 +9230,173 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/Match"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request is not valid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A valid API key or token is needed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The caller may not do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "It does not exist, or the caller cannot see it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Wait for `Retry-After` seconds.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/namespaces/{namespace}/branches/{branch}/find": {
+      "get": {
+        "operationId": "findFiles",
+        "tags": [
+          "files"
+        ],
+        "summary": "Finds paths by name or glob, like `find` or `fd`, without reading any file.",
+        "description": "A glob without `/` matches a name at any depth (`*.ts`); with one it matches the whole path (`src/**/*.test.ts`). `*` and `?` stay within one folder, `**` crosses any number.",
+        "security": [
+          {
+            "bearer": []
+          },
+          {}
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "A namespace of your organization, such as `prod/app`, or `<org>:<namespace>` for a public namespace of another one. Encode `/` as `%2F`.",
+              "example": "prod%2Fapp"
+            },
+            "required": true,
+            "description": "A namespace of your organization, such as `prod/app`, or `<org>:<namespace>` for a public namespace of another one. Encode `/` as `%2F`.",
+            "name": "namespace",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "A branch, such as `main` or `agents/fix-1`. Encode `/` as `%2F`.",
+              "example": "main"
+            },
+            "required": true,
+            "description": "A branch, such as `main` or `agents/fix-1`. Encode `/` as `%2F`.",
+            "name": "branch",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000,
+              "example": "**/*.md"
+            },
+            "required": true,
+            "name": "glob",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 4096,
+              "default": "",
+              "description": "Find only under this folder."
+            },
+            "required": false,
+            "description": "Find only under this folder.",
+            "name": "path",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "any",
+                "files",
+                "folders"
+              ],
+              "description": "`files` (with symlinks), `folders`, or `any` by default."
+            },
+            "required": false,
+            "description": "`files` (with symlinks), `folders`, or `any` by default.",
+            "name": "kind",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$",
+              "description": "Read an older commit of the branch instead of its head."
+            },
+            "required": false,
+            "description": "Read an older commit of the branch instead of its head.",
+            "name": "at",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "The most paths to return. 1,000 by default, at most 100,000."
+            },
+            "required": false,
+            "description": "The most paths to return. 1,000 by default, at most 100,000.",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The paths, in name order.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FoundPath"
                   }
                 }
               }

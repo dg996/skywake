@@ -10,7 +10,9 @@ use futures::TryStreamExt;
 use object_store::memory::InMemory;
 use object_store::path::Path as StorePath;
 use object_store::{ObjectStore, ObjectStoreExt};
-use skywake_core::{Change, Data, Entry, Error, INLINE_BUDGET, Refs, Repo, Trees, open_store};
+use skywake_core::{
+    Change, Data, Entry, Error, INLINE_BUDGET, Pack, Refs, Repo, Trees, open_store,
+};
 use tempfile::tempdir;
 
 fn setup() -> (Arc<InMemory>, Repo) {
@@ -423,7 +425,7 @@ async fn large_trees_split_into_packs_fetched_as_folders_open() {
         .await
         .unwrap()
         .unwrap();
-    let [(root, root_pack)] = head.commit.packs.packed[..] else {
+    let Some(&(root, root_pack)) = head.commit.packs.packed.first() else {
         panic!("the root should be in a pack")
     };
     let objects: Vec<_> = store
@@ -452,6 +454,50 @@ async fn large_trees_split_into_packs_fetched_as_folders_open() {
         elsewhere > 0 && elsewhere < 40,
         "{elsewhere} folders in other packs"
     );
+}
+
+#[tokio::test]
+async fn a_commit_names_the_packs_inside_its_root_pack() {
+    let (store, repo) = setup();
+    repo.create_branch("main", None).await.unwrap();
+    let work = tempdir().unwrap();
+    for folder in 0..40 {
+        fs::create_dir_all(work.path().join(format!("d{folder}"))).unwrap();
+        for i in 0..40 {
+            let path = work.path().join(format!("d{folder}/f{i}"));
+            fs::write(path, pseudo_random(1500 + folder * 40 + i)).unwrap();
+        }
+    }
+    repo.commit("main", work.path(), "large").await.unwrap();
+    let head = Refs::new(store.clone())
+        .head("main")
+        .await
+        .unwrap()
+        .unwrap();
+    let listed = &head.commit.packs.packed;
+    let root_pack: Pack = repo.objects().get(listed[0].1).await.unwrap();
+    assert!(!root_pack.packed.is_empty());
+    for pair in &root_pack.packed {
+        assert!(listed.contains(pair), "{pair:?} is not in the commit");
+    }
+
+    let trees = Trees::new(repo.objects().clone(), &head.commit.packs).unwrap();
+    trees.prefetch().await;
+    let objects: Vec<_> = store
+        .list(Some(&StorePath::from("objects")))
+        .try_collect()
+        .await
+        .unwrap();
+    for object in objects {
+        store.delete(&object.location).await.unwrap();
+    }
+    let top = trees.get(listed[0].0).await.unwrap();
+    for entry in top.values() {
+        let Entry::Dir { tree } = entry else {
+            panic!("a file at the top")
+        };
+        assert_eq!(trees.get(*tree).await.unwrap().len(), 40);
+    }
 }
 
 #[tokio::test]
