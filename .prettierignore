@@ -7,3 +7,7 @@ pnpm-lock.yaml
 apps/api/migrations/meta/
 packages/contract/generated/
 apps/docs/generated/
+vendor/
+# Helm templates are Go templates, not YAML.
+deploy/helm/*/templates/
+sdks/typescript/src/generated/

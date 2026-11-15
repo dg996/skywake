@@ -104,9 +104,8 @@ You can only score these attributes. They can't be filtered, ordered, [grouped](
 `score` takes any [score expression](./hybrid.mdx#score-expressions), so you can combine `dot` and `max_sim` with attributes, `sum`, `decay` and the others. The one exception is `{search: name}`: `rank` runs no searches, so it fails with `400`.
 
 <Callout type="info">
-  `rank` reads every document that passes the filter. Narrow
-  it with a filter, or use `dot` and `max_sim` inside a [hybrid](./hybrid.mdx) `rank` to score only
-  the hits its searches found.
+  `rank` reads every document that passes the filter. Narrow it with a filter, or use `dot` and
+  `max_sim` inside a [hybrid](./hybrid.mdx) `rank` to score only the hits its searches found.
 </Callout>
 
 ## Next

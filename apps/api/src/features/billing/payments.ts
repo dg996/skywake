@@ -59,7 +59,8 @@ export interface CheckoutAsk {
 }
 
 export type CheckoutStart =
-  { ui: "hosted"; url: string } | { ui: "custom"; clientSecret: string; publishableKey: string };
+  | { ui: "hosted"; url: string }
+  | { ui: "custom"; clientSecret: string; publishableKey: string };
 
 export type Notice =
   | { kind: "subscription"; id: string }

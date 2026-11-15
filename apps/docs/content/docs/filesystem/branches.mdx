@@ -37,10 +37,10 @@ To fork an older commit instead of the head, pass it as `at`: `fork("audit/oct-3
 
 [`GET .../branches/{branch}`](/reference/api/branches/getBranch) returns `head`, `forked_from` and `base`, which tell you where the branch came from.
 
-| Field         | Meaning                                                                                                |
-| ------------- | ------------------------------------------------------------------------------------------------------ |
-| `head`        | The commit the branch points to.                                                                       |
-| `forked_from` | The branch it was forked from.                                                                         |
+| Field         | Meaning                                                                                                 |
+| ------------- | ------------------------------------------------------------------------------------------------------- |
+| `head`        | The commit the branch points to.                                                                        |
+| `forked_from` | The branch it was forked from.                                                                          |
 | `base`        | The newest commit it shares with `forked_from`: where it forked, or where the two branches last merged. |
 
 `base` is `null` for an empty branch, and also once the `forked_from` branch is deleted. To see only what a fork changed, diff it [against its base](./diff-and-merge.mdx#review-a-fork).

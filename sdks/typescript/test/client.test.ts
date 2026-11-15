@@ -50,9 +50,7 @@ test("any request is retried after a 429, waiting as the server asks", async (t)
     if (count === 1) return json(response, 429, failure("rate_limited"), { "retry-after": "1" });
     let body = "";
     request.on("data", (chunk) => (body += chunk));
-    request.on("end", () =>
-      json(response, 201, { ...JSON.parse(body), created: "" }),
-    );
+    request.on("end", () => json(response, 201, { ...JSON.parse(body), created: "" }));
   });
   t.after(api.close);
   const sky = new Skywake({ url: api.url, key: "k" });

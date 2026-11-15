@@ -19,10 +19,10 @@ You can also make one in the console under **Settings → API keys**. The key is
 
 Each role can do everything the role before it can, and more.
 
-| Role    | Files                                                                                                                       | Indexes                                                                            |
-| ------- | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `read`  | Read files, history, diffs and sessions.                                                                                    | List and describe indexes, query, search, and list branches and versions.          |
-| `write` | Also fork, commit, revert, reset, merge and start sessions.                                                                 | Also upsert and delete documents; fork, merge, restore and delete branches; build. |
+| Role    | Files                                                                                                                    | Indexes                                                                            |
+| ------- | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| `read`  | Read files, history, diffs and sessions.                                                                                 | List and describe indexes, query, search, and list branches and versions.          |
+| `write` | Also fork, commit, revert, reset, merge and start sessions.                                                              | Also upsert and delete documents; fork, merge, restore and delete branches; build. |
 | `admin` | Also make namespaces, merge into [protected branches](../filesystem/protection.mdx), manage keys and read the audit log. | Also create, copy, change and delete indexes, and collect old data.                |
 
 If a key lacks the role a call needs, the call fails with `403`. For example, an upsert with a `read` key returns ``this needs the `write` role``. An upsert that [creates the index](../indexes/create.mdx#create-on-first-write) needs `admin`.
