@@ -1,30 +1,36 @@
-import { pageMetadata } from "@/lib/metadata";
-
-import { ForkArt } from "@/components/art/product-art";
 import { SitePage } from "@/components/layout/site-page";
 import { Benchmarks } from "@/components/sections/benchmarks";
 import { Cost } from "@/components/sections/cost";
-import { Filesystem } from "@/components/sections/filesystem";
+import { Features } from "@/components/sections/features";
 import { GetStarted } from "@/components/sections/get-started";
 import { ProductHero } from "@/components/sections/product-hero";
+import { Band } from "@/components/ui/frame";
+import { TextureBand } from "@/components/ui/texture";
+import { getMessages } from "@/content/messages";
+import { pageMetadata } from "@/lib/metadata";
+import { pageLocale } from "@/lib/page";
 
-export const metadata = pageMetadata("/filesystem");
+export const instant = false;
 
-export default function FilesystemPage() {
+export const generateMetadata = pageMetadata("/filesystem");
+
+export default async function Filesystem({ params }: PageProps<"/[locale]/filesystem">) {
+  const locale = await pageLocale(params);
+  const t = getMessages(locale);
   return (
-    <SitePage>
+    <SitePage locale={locale} messages={t}>
       <ProductHero
-        label="Filesystem"
-        title="Your bucket, as a"
-        accent="fast local disk."
-        line="Mount your object storage as a normal folder. Give each agent its own copy in milliseconds, then merge the changes back."
+        page={t.productPages.filesystem}
+        t={t.productPages}
         docs="/filesystem/branches"
-        art={<ForkArt />}
       />
-      <Filesystem />
-      <Benchmarks show="files" />
-      <Cost />
-      <GetStarted />
+      <Features features={t.productPages.filesystem.features} />
+      <Benchmarks t={t} show="files" />
+      <TextureBand />
+      <Cost t={t} />
+      {/* Blank space before the waitlist, which has its own pattern. */}
+      <Band className="h-28 sm:h-36" />
+      <GetStarted t={t} />
     </SitePage>
   );
 }

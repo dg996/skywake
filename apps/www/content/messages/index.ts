@@ -6,7 +6,7 @@ import { fr } from "./fr";
 import { it } from "./it";
 import type { HomeMessages } from "./types";
 
-const catalogs: Record<Locale, HomeMessages> = { en, it, fr, es, de };
+const catalogs: Record<Locale, HomeMessages> = { de, en, es, fr, it };
 
 export function getMessages(locale: Locale): HomeMessages {
   return catalogs[locale] ?? en;

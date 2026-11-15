@@ -1,53 +1,45 @@
-import Link from "next/link";
-import { ArrowRight, Check, HardDrive, Search } from "lucide-react";
+// The two products side by side, each with its points and a corner of the console.
+import { ArrowRight, Check, HardDrive, Search, type LucideIcon } from "lucide-react";
 
-import { ForkArt, SearchArt } from "@/components/art/product-art";
-import { CARD, Container } from "@/components/ui/section";
-import { getMessages, type HomeMessages } from "@/content/messages";
-import { defaultLocale, localizePath, type Locale } from "@/lib/i18n";
+import { SCREENS, Screen, type Shot } from "@/components/ui/screen";
+import { SiteLink } from "@/components/ui/site-link";
+import type { HomeMessages } from "@/content/messages";
+import type { Locale } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
+import { Band } from "@/components/ui/frame";
+import { Eyebrow } from "@/components/ui/eyebrow";
 
-const ICONS = { files: HardDrive, search: Search };
-const ART = { files: ForkArt, search: SearchArt };
+const PRODUCTS: Record<"files" | "search", { icon: LucideIcon; shot: Shot }> = {
+  files: { icon: HardDrive, shot: SCREENS.files },
+  search: { icon: Search, shot: SCREENS.search },
+};
 
-export function Products({
-  locale = defaultLocale,
-  messages,
-}: {
-  locale?: Locale;
-  messages?: HomeMessages;
-}) {
-  const t = messages ?? getMessages(locale);
-
+export function Products({ t, locale }: { t: HomeMessages; locale: Locale }) {
+  const p = t.products;
   return (
-    <section id="products" className="scroll-mt-20">
-      <Container className="pt-14 lg:pt-16">
-        <p className="t-eyebrow text-muted-foreground">{t.products.eyebrow}</p>
-        <h2 className="t-h2 t-regular mt-4 max-w-[24ch] text-foreground">{t.products.title}</h2>
-        <p className="t-lead mt-4 max-w-[48ch] text-muted-foreground">{t.products.line}</p>
-        <div className="mt-10 grid grid-cols-[minmax(0,1fr)] gap-3 lg:grid-cols-2">
-          {t.products.items.map((product) => {
-            const Icon = ICONS[product.icon];
-            const Art = ART[product.icon];
-            return (
-              <Link
-                key={product.name}
-                href={localizePath(locale, product.href)}
-                className={`${CARD} group flex flex-col overflow-hidden p-6 transition-colors duration-300 hover:border-foreground/20 sm:p-8`}
-              >
-                <h3 className="t-h3 flex items-center gap-2.5 text-foreground">
-                  <Icon className="size-5 text-muted-foreground" />
-                  {product.name}
-                  <ArrowRight className="ml-auto size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-                </h3>
-                <p className="t-body mt-3 max-w-[44ch] text-muted-foreground">
+    <>
+      {/* The two products side by side, split by a hairline.
+          A subgrid keeps the text and screenshot level across both. */}
+      <Band id="products" className="grid lg:grid-cols-2">
+        {p.items.map((product, n) => {
+          const { icon: Icon, shot } = PRODUCTS[product.icon];
+          return (
+            <div
+              key={product.name}
+              className={cn(
+                "flex flex-col border-border lg:row-span-2 lg:grid lg:grid-rows-subgrid",
+                n > 0 && "border-t lg:border-t-0 lg:border-l",
+              )}
+            >
+              <div className="px-6 pt-14 sm:px-10 lg:px-12 lg:pt-16">
+                <Eyebrow n={n + 1} icon={Icon} />
+                <h3 className="t-h2 t-regular mt-6 text-foreground">{product.name}</h3>
+                <p className="t-lead mt-5 max-w-[40ch] text-muted-foreground">
                   {product.before}
                   <span className="text-foreground">{product.highlight}</span>
                   {product.after}
                 </p>
-                <div className="mt-10">
-                  <Art />
-                </div>
-                <ul className="mt-auto grid gap-2.5 pt-10">
+                <ul className="mt-8 grid gap-2.5">
                   {product.points.map((point) => (
                     <li key={point} className="t-body flex items-start gap-2.5 text-foreground">
                       <Check className="mt-0.5 size-4 shrink-0 text-signal" />
@@ -55,11 +47,24 @@ export function Products({
                     </li>
                   ))}
                 </ul>
-              </Link>
-            );
-          })}
-        </div>
-      </Container>
-    </section>
+                <SiteLink
+                  href={product.href}
+                  locale={locale}
+                  className="btn btn-sm btn-secondary mt-8"
+                >
+                  {t.useCases.cta} <ArrowRight className="size-3.5" />
+                </SiteLink>
+              </div>
+              {/* A corner of the real console, running into the column's right edge. */}
+              <div className="stage-screen pt-12 pl-6 sm:pl-10 lg:pl-12">
+                <div className="screen-frame screen-lift h-72 overflow-hidden rounded-tl-xl border-t border-l border-foreground/15 bg-background">
+                  <Screen shot={shot} alt="" sizes="(min-width: 64rem) 36rem, 100vw" />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </Band>
+    </>
   );
 }

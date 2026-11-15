@@ -1,43 +1,42 @@
 import { Layers } from "@/components/art/layers";
-import { CARD, Container, Section } from "@/components/ui/section";
-import { getMessages, type HomeMessages } from "@/content/messages";
+import type { HomeMessages } from "@/content/messages";
 import { files } from "@/content/numbers";
-import { defaultLocale, type Locale } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
+import { Band, Title } from "@/components/ui/frame";
+import { Statement } from "@/components/ui/statement";
 
 // Measured disk speed: a small write, a small read, and a full build.
 const FIGURES = [0, 1, 3].map((i) => files.groups[1]!.stats[i]!.figure);
 
-export function Architecture({
-  locale = defaultLocale,
-  messages,
-}: {
-  locale?: Locale;
-  messages?: HomeMessages;
-}) {
-  const t = messages ?? getMessages(locale);
+export function Architecture({ t }: { t: HomeMessages }) {
+  const a = t.architecture;
   return (
-    <Section
-      id="architecture"
-      label={t.architecture.label}
-      title={
-        <>
-          {t.architecture.titleBefore}{" "}
-          <span className="text-signal">{t.architecture.titleAccent}</span>
-        </>
-      }
-      line={t.architecture.line}
-    >
-      <Container>
-        <Layers />
-        <dl className="grid gap-3 sm:mt-3 sm:grid-cols-3">
-          {t.architecture.stats.map((label, i) => (
-            <div key={label} className={`${CARD} reveal flex flex-col-reverse p-6`}>
+    <>
+      <Statement
+        id="architecture"
+        pill={a.label}
+        title={<Title before={a.titleBefore} accent={a.titleAccent} />}
+        line={a.line}
+      />
+      <Band className="px-3 py-6 sm:px-6 lg:px-10 lg:py-10">
+        <Layers t={t.layers} />
+      </Band>
+      <Band>
+        <dl className="grid sm:grid-cols-3">
+          {a.stats.map((label, i) => (
+            <div
+              key={label}
+              className={cn(
+                "flex flex-col-reverse border-border px-6 py-8 sm:px-10 lg:px-12",
+                i > 0 && "border-t sm:border-t-0 sm:border-l",
+              )}
+            >
               <dt className="t-body mt-2 text-muted-foreground">{label}</dt>
               <dd className="t-num text-foreground">{FIGURES[i]}</dd>
             </div>
           ))}
         </dl>
-      </Container>
-    </Section>
+      </Band>
+    </>
   );
 }

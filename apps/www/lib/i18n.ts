@@ -1,31 +1,31 @@
-export const locales = ["en", "it", "fr", "es", "de"] as const;
+export const locales = ["de", "en", "es", "fr", "it"] as const;
 
 export type Locale = (typeof locales)[number];
 
 export const defaultLocale: Locale = "en";
 
 export const localeNames: Record<Locale, string> = {
-  en: "English",
-  it: "Italiano",
-  fr: "Français",
-  es: "Español",
   de: "Deutsch",
+  en: "English",
+  es: "Español",
+  fr: "Français",
+  it: "Italiano",
 };
 
 export const localeFlags: Record<Locale, string> = {
-  en: "🇺🇸",
-  it: "🇮🇹",
-  fr: "🇫🇷",
-  es: "🇪🇸",
   de: "🇩🇪",
+  en: "🇺🇸",
+  es: "🇪🇸",
+  fr: "🇫🇷",
+  it: "🇮🇹",
 };
 
 export const localeOg: Record<Locale, string> = {
-  en: "en_US",
-  it: "it_IT",
-  fr: "fr_FR",
-  es: "es_ES",
   de: "de_DE",
+  en: "en_US",
+  es: "es_ES",
+  fr: "fr_FR",
+  it: "it_IT",
 };
 
 export function isLocale(value: string): value is Locale {

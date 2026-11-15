@@ -1,28 +1,28 @@
-import { pageMetadata } from "@/lib/metadata";
-
-import { SearchArt } from "@/components/art/product-art";
 import { SitePage } from "@/components/layout/site-page";
 import { Benchmarks } from "@/components/sections/benchmarks";
+import { Features } from "@/components/sections/features";
 import { GetStarted } from "@/components/sections/get-started";
 import { ProductHero } from "@/components/sections/product-hero";
-import { Search } from "@/components/sections/search";
+import { Band } from "@/components/ui/frame";
+import { getMessages } from "@/content/messages";
+import { pageMetadata } from "@/lib/metadata";
+import { pageLocale } from "@/lib/page";
 
-export const metadata = pageMetadata("/search");
+export const instant = false;
 
-export default function SearchPage() {
+export const generateMetadata = pageMetadata("/search");
+
+export default async function Search({ params }: PageProps<"/[locale]/search">) {
+  const locale = await pageLocale(params);
+  const t = getMessages(locale);
   return (
-    <SitePage>
-      <ProductHero
-        label="Search"
-        title="Search everything in"
-        accent="your bucket."
-        line="Vector, full-text and hybrid search, straight from your object storage, served over an NVMe cache for blazing fast speed."
-        docs="/indexes"
-        art={<SearchArt />}
-      />
-      <Search />
-      <Benchmarks show="search" />
-      <GetStarted />
+    <SitePage locale={locale} messages={t}>
+      <ProductHero page={t.productPages.search} t={t.productPages} docs="/indexes" />
+      <Features features={t.productPages.search.features} />
+      <Benchmarks t={t} show="search" />
+      {/* Blank space before the waitlist, which has its own pattern. */}
+      <Band className="h-28 sm:h-36" />
+      <GetStarted t={t} />
     </SitePage>
   );
 }

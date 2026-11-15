@@ -1,10 +1,34 @@
-import type { MiniArtName } from "@/content/products";
+import type { MiniArtName } from "@/components/art/mini-art";
+
+type Feature = { name: string; line: string; art: MiniArtName };
+/** A legal page. In a body, a string is a paragraph and a list of strings is a bulleted list. */
+type LegalPage = {
+  title: string;
+  intro: string;
+  sections: { title: string; body: (string | string[])[] }[];
+};
+type Chart = { title: string; verdict: string; labels: string[] };
+type ProductPage = {
+  label: string;
+  title: string;
+  accent: string;
+  line: string;
+  features: Feature[];
+};
 
 export type HomeMessages = {
-  meta: {
-    title: string;
-    description: string;
-  };
+  /** Title and description of each page, for search engines and link previews. */
+  pages: Record<
+    | "/"
+    | "/filesystem"
+    | "/search"
+    | "/use-cases"
+    | "/pricing"
+    | "/privacy"
+    | "/terms"
+    | "/benchmarks",
+    { title: string; description: string }
+  >;
   nav: {
     filesystem: string;
     search: string;
@@ -15,15 +39,16 @@ export type HomeMessages = {
     joinWaitlist: string;
     getStarted: string;
     language: string;
+    menu: string;
+    sections: string;
+    theme: string;
   };
   footer: {
     blurb: string;
     product: string;
     project: string;
     legal: string;
-    agents: string;
     useCases: string;
-    enterprise: string;
     openSource: string;
     privacy: string;
     terms: string;
@@ -33,20 +58,16 @@ export type HomeMessages = {
     badge: string;
     titleBefore: string;
     titleAccent: string;
-    subtitle: string;
-    waitlistCta: string;
+    screenshotAlt: string;
     getStartedCta: string;
-    starCta: string;
-    docsCta: string;
   };
   useCases: {
     label: string;
-    title: string;
+    /** The heading: a short claim, then a quieter second line. */
+    heading: [string, string];
     more: string;
     cta: string;
     items: { name: string; title: string; line: string }[];
-    moreTitle: string;
-    others: { name: string; line: string }[];
   };
   git: {
     label: string;
@@ -57,9 +78,6 @@ export type HomeMessages = {
     note: string;
   };
   products: {
-    eyebrow: string;
-    title: string;
-    line: string;
     items: {
       name: string;
       href: "/filesystem" | "/search";
@@ -70,12 +88,6 @@ export type HomeMessages = {
       points: string[];
     }[];
   };
-  filesystem: {
-    label: string;
-    title: string;
-    line: string;
-    features: { name: string; line: string; art: MiniArtName; span: 2 | 3 | 4 }[];
-  };
   architecture: {
     label: string;
     titleBefore: string;
@@ -83,25 +95,12 @@ export type HomeMessages = {
     line: string;
     stats: string[];
   };
-  search: {
-    label: string;
-    title: string;
-    line: string;
-    features: { name: string; line: string; art: MiniArtName; span: 2 | 3 | 4 }[];
-  };
   benchmarks: {
     label: string;
     title: string;
-    line: string;
-    seeAll: string;
-    groups: { claim: string; line: string }[];
   };
   cost: {
     label: string;
-    title: string;
-    line: string;
-    setup: string;
-    lessStorage: string;
     chartTitle: string;
     chart: {
       without: string;
@@ -111,11 +110,8 @@ export type HomeMessages = {
       perMonth: string;
       gap: string;
     };
-    storageMonth: string;
-    beforeAgent: string;
-    vsCopies: string;
-    howTitle: string;
-    steps: { title: string; line: string }[];
+    /** The headline: "{n}% less storage, {n}× lower cost and {n}× faster agent starts." */
+    headline: { storage: string; cost: string; starts: string; and: string };
   };
   openSource: {
     label: string;
@@ -132,5 +128,68 @@ export type HomeMessages = {
     openTitle: string;
     openLine: string;
     openCta: string;
+    form: {
+      email: string;
+      join: string;
+      joining: string;
+      joined: string;
+      invalid: string;
+      off: string;
+      error: string;
+    };
+  };
+  /** The picture of how Skywake is put together. */
+  layers: {
+    alt: string;
+    agents: [string, string];
+    filesystem: [string, string];
+    index: [string, string];
+    cache: [string, string];
+    storage: [string, string];
+  };
+  productPages: {
+    getStarted: string;
+    star: string;
+    filesystem: ProductPage;
+    search: ProductPage;
+  };
+  benchmarkPage: {
+    line: string;
+    filesTitle: string;
+    searchTitle: string;
+    filesNote: string;
+    searchNote: string;
+    files: Chart[];
+    search: Chart[];
+  };
+  plans: {
+    eyebrow: string;
+    title: string;
+    line: string;
+    options: {
+      name: string;
+      price: string;
+      per: string;
+      line: string;
+      includes: string[];
+      action: string;
+    }[];
+  };
+  /** Section bodies may hold {contact}, filled with the contact email. */
+  legal: {
+    updated: string;
+    privacy: LegalPage;
+    terms: LegalPage;
+  };
+  notFound: { label: string; title: string; line: string; back: string };
+  guides: {
+    eyebrow: string;
+    title: string;
+    accent: string;
+    onThisPage: string;
+    read: string;
+    related: { eyebrow: string; title: string; all: string };
+    /** One per use case, by its id in content/use-cases. */
+    items: Record<string, { name: string; title: string; lead: string }>;
   };
 };

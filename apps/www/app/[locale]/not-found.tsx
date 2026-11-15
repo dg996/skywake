@@ -1,24 +1,28 @@
+import { locale as rootLocale } from "next/root-params";
 import Link from "next/link";
 
 import { SitePage } from "@/components/layout/site-page";
-import { Container, SectionHead } from "@/components/ui/section";
+import { Band, Title } from "@/components/ui/frame";
+import { Head } from "@/components/ui/statement";
+import { getMessages } from "@/content/messages";
+import { defaultLocale, isLocale, localizePath } from "@/lib/i18n";
 
-export default function NotFound() {
+export default async function NotFound() {
+  const raw = await rootLocale();
+  const locale = isLocale(raw) ? raw : defaultLocale;
+  const t = getMessages(locale);
   return (
-    <SitePage>
-      <SectionHead
-        label="404"
-        title={
-          <>
-            Nothing here. <span className="text-muted-foreground">This page doesn’t exist.</span>
-          </>
+    <SitePage locale={locale} messages={t}>
+      <Head
+        eyebrow={t.notFound.label}
+        title={<Title before={t.notFound.title} accent={t.notFound.line} />}
+        action={
+          <Link href={localizePath(locale)} className="btn btn-primary">
+            {t.notFound.back}
+          </Link>
         }
       />
-      <Container>
-        <Link href="/" className="btn btn-primary">
-          Back to the home page
-        </Link>
-      </Container>
+      <Band className="h-28 sm:h-36" />
     </SitePage>
   );
 }

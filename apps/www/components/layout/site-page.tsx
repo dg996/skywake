@@ -1,27 +1,27 @@
 import type { ReactNode } from "react";
 
+import { Frame } from "@/components/ui/frame";
 import type { HomeMessages } from "@/content/messages";
-import { defaultLocale, type Locale } from "@/lib/i18n";
+import type { Locale } from "@/lib/i18n";
 import { Footer } from "./footer";
 import { Nav } from "./nav";
 
+/** Every page: the nav, the framed column of bands, and the footer, drawn 10% larger. */
 export function SitePage({
   children,
-  locale = defaultLocale,
+  locale,
   messages,
 }: {
   children: ReactNode;
-  locale?: Locale;
-  messages?: HomeMessages;
+  locale: Locale;
+  messages: HomeMessages;
 }) {
   return (
-    <div className="relative overflow-x-clip">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 left-1/2 -z-10 w-full max-w-6xl -translate-x-1/2 border-x border-border"
-      />
+    <div style={{ zoom: 1.1 }} className="overflow-x-clip">
       <Nav locale={locale} messages={messages} />
-      <main>{children}</main>
+      <main>
+        <Frame>{children}</Frame>
+      </main>
       <Footer locale={locale} messages={messages} />
     </div>
   );

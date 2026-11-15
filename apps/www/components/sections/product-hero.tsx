@@ -1,53 +1,40 @@
+// The top of a product page, centred like the home page's hero.
 import { ArrowUpRight } from "lucide-react";
-import type { ReactNode } from "react";
 import { siGithub } from "simple-icons";
 
 import { BrandIcon } from "@/components/ui/brand-icon";
-import { CARD, Container } from "@/components/ui/section";
+import type { HomeMessages } from "@/content/messages";
 import { site } from "@/content/site";
+import { Title } from "@/components/ui/frame";
+import { Eyebrow } from "@/components/ui/eyebrow";
 
 export function ProductHero({
-  label,
-  title,
-  accent,
-  line,
+  page: { label, title, accent, line },
   docs,
-  art,
+  t,
 }: {
-  label: string;
-  title: string;
-  accent: string;
-  line: string;
+  page: HomeMessages["productPages"]["filesystem"];
   docs: string;
-  art?: ReactNode;
+  t: HomeMessages["productPages"];
 }) {
   return (
-    <section>
-      <Container className="pt-20 pb-12 lg:pt-28">
-        <p className="t-eyebrow text-muted-foreground">{label}</p>
-        <h1 className="t-display t-regular mt-5 text-foreground">
-          {title} <span className="text-signal">{accent}</span>
-        </h1>
-        <p className="t-lead mt-6 max-w-[52ch] text-muted-foreground">{line}</p>
-        <div className="mt-10 flex flex-wrap gap-3">
-          <a href={`${site.docsUrl}${docs}`} className="btn btn-primary">
-            Get started <ArrowUpRight className="size-4" />
+    <section className="flex flex-col items-center px-6 pt-24 pb-20 text-center sm:px-10 lg:px-12 lg:pt-32 lg:pb-28">
+      <Eyebrow>{label}</Eyebrow>
+      <h1 className="t-display t-regular mt-6 max-w-[16ch] text-foreground">
+        <Title before={title} accent={accent} />
+      </h1>
+      <p className="t-lead mt-8 max-w-[46ch] text-muted-foreground">{line}</p>
+      <div className="mt-10 flex flex-wrap justify-center gap-3">
+        <a href={`${site.docsUrl}${docs}`} className="btn btn-primary">
+          {t.getStarted} <ArrowUpRight className="size-4" />
+        </a>
+        {site.repoUrl && (
+          <a href={site.repoUrl} className="btn btn-secondary">
+            <BrandIcon icon={siGithub} className="size-4" />
+            {t.star}
           </a>
-          {site.repoUrl && (
-            <a href={site.repoUrl} className="btn btn-secondary">
-              <BrandIcon icon={siGithub} className="size-4" />
-              Star on GitHub
-            </a>
-          )}
-        </div>
-      </Container>
-      {art && (
-        <Container>
-          <div aria-hidden className={`${CARD} overflow-hidden p-6 sm:p-8`}>
-            {art}
-          </div>
-        </Container>
-      )}
+        )}
+      </div>
     </section>
   );
 }

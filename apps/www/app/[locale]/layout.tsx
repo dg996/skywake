@@ -1,49 +1,70 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { Geist, IBM_Plex_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 
-import { HtmlLang } from "@/components/layout/html-lang";
 import { Providers } from "@/components/layout/providers";
 import { getMessages } from "@/content/messages";
 import { site } from "@/content/site";
-import { isLocale, localeOg, locales, type Locale } from "@/lib/i18n";
+import { isLocale, locales } from "@/lib/i18n";
+import "../globals.css";
 
+// The root layout sits under the language, so <html lang> is right in the first byte.
 export const instant = false;
+
+const geist = Geist({ variable: "--font-geist", subsets: ["latin"] });
+const mono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
+  subsets: ["latin"],
+  weight: ["400", "500"],
+});
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export async function generateMetadata({
-  params,
-}: LayoutProps<"/[locale]">): Promise<Metadata> {
-  const { locale: raw } = await params;
-  if (!isLocale(String(raw))) return {};
-  const locale = raw as Locale;
-  const messages = getMessages(locale);
+export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Promise<Metadata> {
+  const { locale } = await params;
+  const home = getMessages(isLocale(locale) ? locale : "en").pages["/"];
   return {
-    title: { absolute: messages.meta.title },
-    description: messages.meta.description,
-    alternates: {
-      canonical: `/${locale}`,
-      languages: Object.fromEntries(locales.map((l) => [l, `/${l}`])),
-    },
-    openGraph: {
-      locale: localeOg[locale],
-      siteName: site.name,
-      title: messages.meta.title,
-      description: messages.meta.description,
-    },
+    metadataBase: new URL(site.url),
+    title: { template: `%s · ${site.name}`, default: home.title },
+    description: home.description,
+    applicationName: site.name,
+    keywords: [
+      "S3 filesystem",
+      "filesystem for AI agents",
+      "agent sandbox storage",
+      "copy-on-write filesystem",
+      "object storage filesystem",
+      "vector search on S3",
+      "full-text search",
+      "hybrid search",
+      "MCP server",
+    ],
+    robots: { index: true, follow: true, googleBot: { "max-image-preview": "large" } },
+    twitter: { card: "summary_large_image" },
   };
 }
 
-export default async function LocaleLayout({ children, params }: LayoutProps<"/[locale]">) {
-  const { locale } = await params;
-  if (!isLocale(String(locale))) notFound();
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f6f5f1" },
+    { media: "(prefers-color-scheme: dark)", color: "#08090a" },
+  ],
+};
 
+export default async function RootLayout({ children, params }: LayoutProps<"/[locale]">) {
+  const { locale } = await params;
+  if (!isLocale(locale)) notFound();
   return (
-    <Providers>
-      <HtmlLang locale={locale as Locale} />
-      {children}
-    </Providers>
+    <html
+      lang={locale}
+      suppressHydrationWarning
+      className={`${geist.variable} ${mono.variable} antialiased`}
+    >
+      <body className="min-h-dvh">
+        <Providers>{children}</Providers>
+      </body>
+    </html>
   );
 }

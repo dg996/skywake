@@ -1,6 +1,6 @@
+import type { ReactNode } from "react";
 import { ArrowUpRight, BookOpen, Scale } from "lucide-react";
 import {
-  Building2,
   ChartNoAxesColumn,
   CreditCard,
   FileText,
@@ -9,50 +9,48 @@ import {
   Layers,
   Search,
   Shield,
-  Sparkles,
 } from "lucide-react";
 import { siGithub } from "simple-icons";
 
 import { Logo } from "@skywake/ui/components/logo";
 import { BrandIcon } from "@/components/ui/brand-icon";
-import { Container, Hatch } from "@/components/ui/section";
 import { SiteLink } from "@/components/ui/site-link";
-import { getMessages, type HomeMessages } from "@/content/messages";
+import type { HomeMessages } from "@/content/messages";
 import { site } from "@/content/site";
-import { defaultLocale, type Locale } from "@/lib/i18n";
-import { ThemeToggle } from "./theme-toggle";
+import type { Locale } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 const LINK =
   "t-small group inline-flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground";
 
+// The footer's width: the frame's, with the page's side gutter.
+function Container({ className, children }: { className?: string; children: ReactNode }) {
+  return <div className={cn("mx-auto w-full max-w-6xl px-5 sm:px-8", className)}>{children}</div>;
+}
+
 const ICON_BUTTON =
   "grid size-9 place-items-center rounded-md bg-background text-muted-foreground ring-1 ring-border transition-colors hover:text-foreground";
 
-export function Footer({
-  locale = defaultLocale,
-  messages,
-}: {
-  locale?: Locale;
-  messages?: HomeMessages;
-}) {
-  const t = messages ?? getMessages(locale);
+export function Footer({ locale, messages: t }: { locale: Locale; messages: HomeMessages }) {
   const columns = [
     {
       title: t.footer.product,
       links: [
         { href: "/filesystem", label: t.nav.filesystem, icon: HardDrive },
         { href: "/search", label: t.nav.search, icon: Search },
-        { href: "/agents", label: t.footer.agents, icon: Sparkles },
         { href: "/use-cases", label: t.footer.useCases, icon: Layers },
         { href: "/pricing", label: t.nav.pricing, icon: CreditCard },
-        { href: "/enterprise", label: t.footer.enterprise, icon: Building2 },
       ],
     },
     {
       title: t.footer.project,
       links: [
         { href: site.docsUrl, label: t.nav.docs, icon: BookOpen },
-        { href: "/#benchmarks", label: t.nav.benchmarks, icon: ChartNoAxesColumn },
+        {
+          href: "/benchmarks",
+          label: t.nav.benchmarks,
+          icon: ChartNoAxesColumn,
+        },
         { href: "/#open-source", label: t.footer.openSource, icon: Heart },
       ],
     },
@@ -67,7 +65,7 @@ export function Footer({
 
   return (
     <footer className="overflow-hidden">
-      <Hatch className="mt-24 lg:mt-32" />
+      <div aria-hidden className="mt-24 border-t border-border lg:mt-32" />
       <Container className="@container">
         <div className="grid gap-12 pt-14 lg:grid-cols-[minmax(0,1.6fr)_repeat(3,minmax(0,1fr))]">
           <div className="flex flex-col gap-6">
@@ -124,7 +122,6 @@ export function Footer({
                 <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </a>
             )}
-            <ThemeToggle />
           </div>
         </Container>
       </div>

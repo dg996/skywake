@@ -17,6 +17,8 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@skywake/ui"],
   allowedDevOrigins: ["192.168.*.*", "10.*.*.*"],
   cacheComponents: true,
+  // app/global-not-found.tsx: the 404 for URLs outside any language.
+  experimental: { globalNotFound: true },
   partialPrefetching: true,
   turbopack: {
     rules: {
