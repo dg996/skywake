@@ -325,7 +325,7 @@ def heads_tier(stack, ctx, place):
     """Three cache nodes, one per zone, that also keep branch heads."""
     addresses = [free_address() for _ in "abc"]
     peers = [f"http://{address}" for address in addresses]
-    for zone, address in zip("abc", addresses):
+    for zone, address in zip("abc", addresses, strict=True):
         stack.enter_context(CacheNode(ctx, place / f"tier-{zone}", zone, address, peers))
     return peers
 

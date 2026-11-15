@@ -29,10 +29,15 @@ export const StoreCredentials = z
     access: Access,
     heads: z
       .object({
-        nodes: z.array(z.string()).openapi({ description: "The cache servers that own branch heads." }),
-        folder: z.string().openapi({ description: "The namespace's folder, as the cache servers name it." }),
+        nodes: z
+          .array(z.string())
+          .openapi({ description: "The cache servers that own branch heads." }),
+        folder: z
+          .string()
+          .openapi({ description: "The namespace's folder, as the cache servers name it." }),
         pass: z.string().openapi({
-          description: "Sent as the bearer token. Good until `expiresAt`, for this folder and access only.",
+          description:
+            "Sent as the bearer token. Good until `expiresAt`, for this folder and access only.",
         }),
       })
       .nullable()

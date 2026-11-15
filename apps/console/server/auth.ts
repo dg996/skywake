@@ -120,8 +120,7 @@ export const auth = betterAuth({
         sendOnSignUp: true,
         sendOnSignIn: true,
         autoSignInAfterVerification: true,
-        sendVerificationEmail: ({ user, url }) =>
-          mail(user.email, verifyEmail({ url })),
+        sendVerificationEmail: ({ user, url }) => mail(user.email, verifyEmail({ url })),
       }
     : undefined,
   socialProviders: SOCIAL,

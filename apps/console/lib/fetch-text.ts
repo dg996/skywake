@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 
 export type Loaded<T> =
-  { state: "loading" } | { state: "done"; value: T } | { state: "failed"; error: string };
+  | { state: "loading" }
+  | { state: "done"; value: T }
+  | { state: "failed"; error: string };
 
 /** Fetches a URL from the console's proxy; null skips it. */
 export function useFetch<T>(
