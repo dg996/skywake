@@ -210,7 +210,7 @@ export function NewIndex({
         </DialogHeader>
         <form onSubmit={submit} noValidate className="grid gap-6">
           <Section label="Name" error={errorOf("name")}>
-            <div className="rounded-md flex min-w-0 items-center bg-muted/60 font-mono text-sm focus-within:bg-muted">
+            <div className="rounded-md flex min-w-0 items-center bg-muted/60 text-sm focus-within:bg-muted">
               <span className="shrink-0 pl-2.5 text-faint">{env}/</span>
               <input
                 aria-label="Name"
@@ -234,7 +234,7 @@ export function NewIndex({
             hint={`${vectors.length} of ${VECTORS_MAX}`}
             error={errorOf("vectors")}
           >
-            <div className="grid grid-cols-[1fr_6rem_8rem_2rem] gap-x-2 font-mono text-micro tracking-wide text-faint uppercase max-sm:hidden">
+            <div className="grid grid-cols-[1fr_6rem_8rem_2rem] gap-x-2 text-xs text-muted-foreground max-sm:hidden">
               <span>Column</span>
               <span>Dims</span>
               <span>Metric</span>
@@ -258,7 +258,7 @@ export function NewIndex({
                       placeholder="embedding"
                       onChange={(e) => setVector(i, { name: e.target.value })}
                       onBlur={touch(`vectors.${i}.name`)}
-                      className={cn("font-mono", nameError && "bg-destructive/10")}
+                      className={cn(nameError && "bg-destructive/10")}
                     />
                     <TextField
                       aria-label="Dimensions"
@@ -335,7 +335,7 @@ export function NewIndex({
                       placeholder="category"
                       onChange={(e) => setAttribute(i, { name: e.target.value })}
                       onBlur={touch(`attributes.${i}.name`)}
-                      className={cn("font-mono", error && "bg-destructive/10")}
+                      className={cn(error && "bg-destructive/10")}
                     />
                     <Select
                       aria-label="Type"

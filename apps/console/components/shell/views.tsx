@@ -24,7 +24,7 @@ export function Views() {
       return <SettingsPage />;
     case "usage":
       return <Usage />;
-    case "filesystems":
+    case "disks":
       return <Namespaces key={route.env} env={route.env} />;
     case "activity":
       return <Activity key={route.env} env={route.env} />;

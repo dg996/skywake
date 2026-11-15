@@ -14,7 +14,7 @@ export const apiPath = (ns: string, rest: string) =>
 
 export const decode = decodeURIComponent;
 
-/** An environment's pages: its filesystems (the home), activity and indexes. */
+/** An environment's pages: its disks (the home), activity and indexes. */
 export const envPath = (env: string, page?: "activity" | "indexes") =>
   `/e/${encodeURIComponent(env)}${page ? `/${page}` : ""}`;
 

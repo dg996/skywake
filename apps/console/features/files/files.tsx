@@ -51,7 +51,7 @@ import { mainOf, useFleet } from "@/features/fleet/fleet";
 import { NamespacePage } from "@/features/namespaces/namespace-header";
 import { ForkDialog, useForkDialog } from "@/features/branches/branch-actions";
 import { Link, navigate } from "@/components/shell/router";
-import { Ago, Button, Choice, Glide, cx } from "@/components/kit";
+import { Ago, Button, Checkbox, Choice, Glide, cx } from "@/components/kit";
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger, Prompt } from "@/components/menu";
 import { bytes, kindOf } from "@/lib/file-kinds";
 import { settled } from "@/lib/mutate";
@@ -77,7 +77,7 @@ import { upload } from "./uploads";
 
 type Sort = { by: "name" | "size" | "modified"; up: boolean };
 
-/** A filesystem's files on one branch, to browse and change like a drive. */
+/** A disk's files on one branch, to browse and change like a drive. */
 export function Files({ ns }: { ns: string }) {
   const params = useSearchParams();
   const fleet = useFleet({ ns });
@@ -87,7 +87,7 @@ export function Files({ ns }: { ns: string }) {
   const main = mainOf(fleet.branches);
   const branchName = params.get("branch") ?? main?.name ?? "main";
   const branch = fleet.branches.find((b) => b.name === branchName);
-  // A new filesystem has no branches. Its first change makes main.
+  // A new disk has no branches. Its first change makes main.
   const fresh = !fleet.loading && !fleet.branches.length;
   const dir = params.get("path") ?? "";
 
@@ -452,7 +452,7 @@ export function Files({ ns }: { ns: string }) {
           onClick={(event) => event.target === event.currentTarget && setSelected(new Set())}
         >
           {fresh ? (
-            <Blank title="This filesystem is empty.">
+            <Blank title="This disk is empty.">
               Drop files here, upload them, or make a folder.
             </Blank>
           ) : error ? (
@@ -722,7 +722,7 @@ function BranchMenu({
   return (
     <Menu>
       <MenuTrigger asChild>
-        <Button leadingIcon={GitBranch} className="max-w-56 font-mono">
+        <Button leadingIcon={GitBranch} className="max-w-56">
           <span className="truncate">{current}</span>
         </Button>
       </MenuTrigger>
@@ -809,50 +809,6 @@ function RowMenu({
   );
 }
 
-function Check({
-  on,
-  partly,
-  onClick,
-  label,
-}: {
-  on: boolean;
-  partly?: boolean;
-  onClick: () => void;
-  label: string;
-}) {
-  return (
-    <button
-      role="checkbox"
-      aria-checked={partly ? "mixed" : on}
-      aria-label={label}
-      onClick={(event) => {
-        event.stopPropagation();
-        onClick();
-      }}
-      onDoubleClick={(event) => event.stopPropagation()}
-      className={cx(
-        "grid size-4 place-items-center border transition-colors",
-        on || partly
-          ? "border-foreground bg-foreground text-background"
-          : "border-line-strong bg-background",
-      )}
-    >
-      {on && (
-        <svg
-          viewBox="0 0 12 12"
-          className="size-3"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <path d="M2.5 6.2 5 8.5l4.5-5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      )}
-      {partly && !on && <span className="h-0.5 w-2 bg-current" />}
-    </button>
-  );
-}
-
 const COLUMNS =
   "grid grid-cols-[28px_minmax(0,1fr)_96px_112px_36px] items-center gap-2 max-sm:grid-cols-[28px_minmax(0,1fr)_36px]";
 
@@ -896,7 +852,7 @@ function ListView({
     <div>
       <div className={cx(COLUMNS, "h-10 border-b px-3 text-xs text-muted-foreground")}>
         <span className="grid place-items-center">
-          <Check
+          <Checkbox
             on={count > 0 && count === entries.length}
             partly={count > 0 && count < entries.length}
             onClick={onToggleAll}
@@ -930,7 +886,7 @@ function ListView({
                   selected.size > 0 && "opacity-100",
                 )}
               >
-                <Check
+                <Checkbox
                   on={on}
                   onClick={() => onToggle(entry.name)}
                   label={`Select ${entry.name}`}

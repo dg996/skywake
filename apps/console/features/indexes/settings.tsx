@@ -35,24 +35,26 @@ export function IndexSettings({ index, onChange }: { index: IndexInfo; onChange:
         <div className="grid gap-3 px-4 pt-4">
           <p className="text-sm text-muted-foreground">
             Every branch and all its documents are deleted. This can&apos;t be undone. Type{" "}
-            <span className="font-mono text-foreground">{index.name}</span> to confirm.
+            <span className="text-foreground">{index.name}</span> to confirm.
           </p>
-          <TextField
-            aria-label="Index name"
-            value={typed}
-            onChange={(e) => setTyped(e.target.value)}
-            className="max-w-sm font-mono"
-          />
-          <Button
-            variant="danger"
-            size="default"
-            leadingIcon={Trash2}
-            className="w-fit"
-            disabled={busy || typed !== index.name}
-            onClick={remove}
-          >
-            Delete index
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <TextField
+              aria-label="Index name"
+              placeholder={index.name}
+              value={typed}
+              onChange={(e) => setTyped(e.target.value)}
+              className="w-72 max-sm:w-full"
+            />
+            <Button
+              variant="danger"
+              size="default"
+              leadingIcon={Trash2}
+              disabled={busy || typed !== index.name}
+              onClick={remove}
+            >
+              Delete index
+            </Button>
+          </div>
         </div>
       </Panel>
     </div>

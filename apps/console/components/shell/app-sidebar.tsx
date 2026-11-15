@@ -85,7 +85,7 @@ export function AppSidebar() {
               active={path === envPath(env) || !!ns}
               icon={<LayoutGrid />}
             >
-              Filesystems
+              Disks
             </NavItem>
             <NavItem
               href={envPath(env, "indexes")}
@@ -207,7 +207,7 @@ function NavItem({
             <motion.span
               layoutId="sidebar-active"
               transition={{ type: "spring", stiffness: 500, damping: 40 }}
-              className="absolute inset-0 -z-10 rounded-md bg-sidebar-accent shadow-[inset_0_0_0_1px_var(--sidebar-border)]"
+              className="absolute inset-0 -z-10 rounded-md bg-sidebar-accent"
             />
           )}
           {icon}
@@ -298,7 +298,7 @@ function OrgSwitcher() {
   );
 }
 
-/** Environments, such as prod and staging, each hold their own filesystems and indexes. */
+/** Environments, such as prod and staging, each hold their own disks and indexes. */
 function EnvironmentSwitcher({ current }: { current: string }) {
   const { envs } = useEnvironments();
   const [creating, setCreating] = useState(false);

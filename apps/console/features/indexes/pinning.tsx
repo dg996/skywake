@@ -80,8 +80,8 @@ export function IndexPinning({ index, onChange }: { index: IndexInfo; onChange: 
 function Replica({ replica }: { replica: PinnedReplica }) {
   return (
     <div className="flex h-10 items-center gap-4 border-b border-border/60 px-4 last:border-0">
-      <span className="flex-1 truncate font-mono text-sm">{replica.server}</span>
-      <span className="font-mono text-xs text-muted-foreground">
+      <span className="flex-1 truncate text-sm">{replica.server}</span>
+      <span className="text-xs text-muted-foreground">
         {replica.warm ? "warm" : "warming"} · {replica.in_flight} in flight
       </span>
     </div>

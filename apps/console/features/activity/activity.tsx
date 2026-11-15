@@ -170,7 +170,7 @@ export function Activity({ env }: { env: string }) {
         ) : fleet.loading ? (
           <Rows count={10} />
         ) : (
-          <Empty title="No activity yet" columns={["Event", "Filesystem", "When"]}>
+          <Empty title="No activity yet" columns={["Event", "Disk", "When"]}>
             Commits, forks and merges show here the moment they land.
           </Empty>
         )}
@@ -182,7 +182,7 @@ export function Activity({ env }: { env: string }) {
 function describe(event: Event, many: boolean): ReactNode {
   const { ns } = event;
   const branch = (name: string) => (
-    <Link href={branchPath(ns, name)} className="font-mono text-foreground hover:underline">
+    <Link href={branchPath(ns, name)} className="text-foreground hover:underline">
       {name}
     </Link>
   );
@@ -190,7 +190,7 @@ function describe(event: Event, many: boolean): ReactNode {
     <>
       {" "}
       in{" "}
-      <Link href={nsPath(ns)} className="font-mono hover:underline">
+      <Link href={nsPath(ns)} className="hover:underline">
         {nameInEnv(ns)}
       </Link>
     </>
@@ -220,7 +220,7 @@ function describe(event: Event, many: boolean): ReactNode {
     case "delete":
       return (
         <>
-          deleted <span className="font-mono">{event.branch}</span>
+          deleted <span>{event.branch}</span>
           {where}
         </>
       );
@@ -232,7 +232,7 @@ function describe(event: Event, many: boolean): ReactNode {
       return (
         <>
           created{" "}
-          <Link href={nsPath(ns)} className="font-mono text-foreground hover:underline">
+          <Link href={nsPath(ns)} className="text-foreground hover:underline">
             {nameInEnv(ns)}
           </Link>
         </>

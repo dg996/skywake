@@ -49,8 +49,8 @@ export function eventOf(row: Audit): Event | undefined {
 type Made = { name: string; created: number };
 
 /**
- * What changed, read from commits, branches and filesystems. Members see this
- * instead of the audit log: commits, merges, forks and new filesystems.
+ * What changed, read from commits, branches and disks. Members see this
+ * instead of the audit log: commits, merges, forks and new disks.
  */
 export function changesOf(
   commits: readonly Commit[],

@@ -30,7 +30,7 @@ test("only owners and admins read the audit log, as on the API", () => {
   assert.match(activityFor("member"), none);
 });
 
-test("members see commits, merges, forks and new filesystems", () => {
+test("members see commits, merges, forks and new disks", () => {
   const commit = (
     hash: string,
     branch: string,

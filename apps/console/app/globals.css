@@ -1,5 +1,23 @@
 @import "@skywake/ui/globals.css";
 
+/* Dark mode is a soft grey, not pure black: the page sits a step lighter than the sidebar. */
+.dark {
+  --background: #101113;
+  --primary-foreground: #101113;
+  --card: #141517;
+  --popover: #17181a;
+  --secondary: #1a1b1e;
+  --muted: #1a1b1e;
+  --accent: #1d1e21;
+  --sidebar: #0b0c0d;
+  --sidebar-primary-foreground: #101113;
+  --surface-1: #141517;
+  --surface-2: #17181a;
+  --surface-3: #1a1b1e;
+  --surface-4: #1d1e21;
+  --surface-5: #212225;
+}
+
 @layer base {
   html {
     font-feature-settings: "cv11", "ss01";

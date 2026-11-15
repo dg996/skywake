@@ -31,7 +31,7 @@ export function FileBrowser({
 
   return (
     <div>
-      <nav className="flex h-9 items-center gap-1 border-b px-5 font-mono text-xs text-muted-foreground">
+      <nav className="flex h-9 items-center gap-1 border-b px-5 text-xs text-muted-foreground">
         <button onClick={() => onOpen("")} className="hover:text-fg">
           {branch}
         </button>
@@ -55,7 +55,7 @@ export function FileBrowser({
             <li key={entry.name}>
               <button
                 onClick={() => onOpen(path ? `${path}/${entry.name}` : entry.name)}
-                className="flex h-8 w-full items-center gap-2 border-b border-line/60 px-5 text-left font-mono text-sm hover:bg-hover"
+                className="flex h-8 w-full items-center gap-2 border-b border-line/60 px-5 text-left text-sm hover:bg-hover"
               >
                 {entry.kind === "folder" ? (
                   <Folder className="size-3.5 text-muted-foreground" />

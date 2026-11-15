@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, ScanSearch } from "lucide-react";
 import {
   animate,
   AnimatePresence,
@@ -26,6 +26,7 @@ import { Skeleton } from "@skywake/ui/components/skeleton";
 import { meshOf } from "@skywake/ui/lib/mesh";
 import { cn } from "@skywake/ui/lib/utils";
 import { Link } from "@/components/shell/router";
+import { nameInEnv } from "@/lib/names";
 
 export { Input };
 export const cx = cn;
@@ -91,6 +92,52 @@ export function Kbd({ children, className }: { children: ReactNode; className?: 
   );
 }
 
+/** A small square checkbox. `partly` draws a dash: some, not all. */
+export function Checkbox({
+  on,
+  partly,
+  onClick,
+  label,
+}: {
+  on: boolean;
+  partly?: boolean;
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={partly ? "mixed" : on}
+      aria-label={label}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick();
+      }}
+      onDoubleClick={(event) => event.stopPropagation()}
+      className={cx(
+        "grid size-4 shrink-0 place-items-center rounded-[5px] border transition-colors",
+        on || partly
+          ? "border-foreground bg-foreground text-background"
+          : "border-line-strong bg-background hover:border-foreground/40",
+      )}
+    >
+      {on && (
+        <svg
+          viewBox="0 0 12 12"
+          className="size-3"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path d="M2.5 6.2 5 8.5l4.5-5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
+      {partly && !on && <span className="h-0.5 w-2 bg-current" />}
+    </button>
+  );
+}
+
 /** A short commit hash, in the mono face. */
 export function Hash({ value, className }: { value?: string | null; className?: string }) {
   if (!value) return null;
@@ -141,6 +188,81 @@ export function Page({
             )}
           </div>
           {actions && <div className="ml-auto flex items-center gap-2">{actions}</div>}
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * A disk's or an index's page: its mark and name, a line of facts, tabs,
+ * then the open tab. Disks and indexes share it, so both read the same.
+ */
+export function ResourcePage({
+  name,
+  mark,
+  facts,
+  actions,
+  tabs,
+  tools,
+  children,
+}: {
+  name: string;
+  /** The orb for a disk, the square mark for an index. */
+  mark: ReactNode;
+  /** Short facts, shown in a row with dots between them. */
+  facts: ReactNode[];
+  actions?: ReactNode;
+  tabs: { href: string; label: string; active: boolean }[];
+  tools?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex-1 overflow-y-auto">
+      <div className="mx-auto grid max-w-6xl gap-8 px-8 pt-10 pb-16 max-sm:px-4 max-sm:pt-6">
+        <div className="grid gap-6">
+          <div className="flex flex-wrap items-center gap-3.5">
+            {mark}
+            <div className="min-w-0">
+              <h1 className="truncate text-[22px] leading-7 font-semibold tracking-[-0.02em]">
+                {nameInEnv(name)}
+              </h1>
+              <p className="mt-0.5 flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-muted-foreground">
+                {facts.map((fact, i) => (
+                  <span key={i} className="flex items-baseline gap-x-1.5">
+                    {i > 0 && <span className="text-faint">·</span>}
+                    {fact}
+                  </span>
+                ))}
+              </p>
+            </div>
+            {actions && <div className="ml-auto flex items-center gap-2">{actions}</div>}
+          </div>
+          <nav className="flex items-center gap-6 overflow-x-auto border-b">
+            {tabs.map((tab) => (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={cn(
+                  "relative shrink-0 pb-3 text-sm transition-colors",
+                  tab.active
+                    ? "font-medium text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {tab.label}
+                {tab.active && (
+                  <motion.span
+                    layoutId={`tabs-${name}`}
+                    transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                    className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-foreground"
+                  />
+                )}
+              </Link>
+            ))}
+            {tools && <div className="ml-auto flex items-center gap-2 pb-2">{tools}</div>}
+          </nav>
         </div>
         {children}
       </div>
@@ -255,7 +377,7 @@ export function Avatar({ name, className }: { name: string; className?: string }
   );
 }
 
-/** A filesystem's mark: a round gradient mesh made from its name. */
+/** A disk's mark: a round gradient mesh made from its name. */
 export function Orb({ name, className }: { name: string; className?: string }) {
   return (
     <span
@@ -263,6 +385,28 @@ export function Orb({ name, className }: { name: string; className?: string }) {
       className={cn("inline-block size-5 shrink-0 rounded-full", className)}
       style={{ background: meshOf(name) }}
     />
+  );
+}
+
+/**
+ * An index's mark: its own mesh, but square, with the search glyph on it,
+ * so an index never reads as a disk.
+ */
+export function IndexMark({ name, className }: { name: string; className?: string }) {
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        "inline-grid size-5 shrink-0 place-items-center rounded-[30%] text-white",
+        className,
+      )}
+      style={{ background: meshOf(name) }}
+    >
+      <ScanSearch
+        className="size-[55%] drop-shadow-[0_1px_1px_rgb(0_0_0/0.25)]"
+        strokeWidth={2.25}
+      />
+    </span>
   );
 }
 

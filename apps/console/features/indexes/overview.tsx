@@ -38,15 +38,17 @@ export function Overview({ index, branch }: { index: IndexInfo; branch: string }
 
       <Usage index={index.name} />
 
-      <Panel title="Vector columns" count={index.schema.vectors.length}>
-        {index.schema.vectors.map((column) => (
-          <Row
-            key={column.name}
-            name={column.name}
-            detail={`${column.dims} dims · ${column.metric}`}
-          />
-        ))}
-      </Panel>
+      {index.schema.vectors.length > 0 && (
+        <Panel title="Vector columns" count={index.schema.vectors.length}>
+          {index.schema.vectors.map((column) => (
+            <Row
+              key={column.name}
+              name={column.name}
+              detail={`${column.dims} dims · ${column.metric}`}
+            />
+          ))}
+        </Panel>
+      )}
       <Panel title="Attributes" count={index.schema.attributes.length}>
         {index.schema.attributes.length ? (
           index.schema.attributes.map((column) => (
@@ -58,7 +60,7 @@ export function Overview({ index, branch }: { index: IndexInfo; branch: string }
       </Panel>
       <p className="text-xs text-faint">
         In {city(index.region)} ({index.region}), made{" "}
-        {new Date(index.created).toLocaleDateString()}.
+        {new Date(index.created).toLocaleDateString(undefined, { dateStyle: "long" })}.
       </p>
     </div>
   );
@@ -78,8 +80,8 @@ function Figure({ label, value }: { label: string; value?: string }) {
 function Row({ name, detail }: { name: string; detail: string }) {
   return (
     <div className="flex h-10 items-center gap-4 border-b border-border/60 px-4 last:border-0">
-      <span className="flex-1 font-mono text-sm">{name}</span>
-      <span className="font-mono text-xs text-muted-foreground">{detail}</span>
+      <span className="flex-1 text-sm">{name}</span>
+      <span className="text-xs text-muted-foreground">{detail}</span>
     </div>
   );
 }
@@ -158,7 +160,7 @@ function Usage({ index }: { index: string }) {
           <p className="py-10 text-sm text-destructive">{loaded.error}</p>
         ) : (
           <div
-            className="relative mt-3 flex h-40 items-end gap-1"
+            className="relative mt-3 flex h-40 items-end gap-1.5"
             onMouseLeave={() => setHover(null)}
           >
             {[0.5, 1].map((line) => (
@@ -175,18 +177,19 @@ function Usage({ index }: { index: string }) {
                 <div
                   key={day?.day ?? i}
                   onMouseEnter={() => setHover(i)}
-                  className="relative z-10 flex h-full flex-1 items-end"
+                  className="relative z-10 flex h-full flex-1 items-end justify-center"
                   aria-label={day ? `${label(day.day)}: ${show(value)}` : undefined}
                 >
                   <div
                     className={cx(
-                      "flex w-full flex-col justify-end overflow-hidden rounded-t-[3px] transition-[height,opacity]",
+                      "flex w-full max-w-7 flex-col justify-end overflow-hidden rounded-t-[4px] transition-[height,opacity]",
                       !day && "animate-pulse bg-muted",
+                      day && !value && "bg-fg/10",
                       hover !== null && hover !== i && "opacity-40",
                     )}
                     style={{
                       height: day ? `${(value / most) * 100}%` : "20%",
-                      minHeight: value ? 3 : 0,
+                      minHeight: day ? 2 : 0,
                     }}
                   >
                     {day && measure === "writes" ? (
@@ -195,14 +198,14 @@ function Usage({ index }: { index: string }) {
                           className="bg-fg/25"
                           style={{ height: `${value ? (day.deletes / value) * 100 : 0}%` }}
                         />
-                        <div className="flex-1 bg-fg/85" />
+                        <div className="flex-1 bg-fg/70" />
                       </>
                     ) : (
                       day && (
                         <div
                           className={cx(
                             "flex-1",
-                            day.counted || measure === "queries" ? "bg-fg/85" : "bg-fg/25",
+                            day.counted || measure === "queries" ? "bg-fg/70" : "bg-fg/25",
                           )}
                         />
                       )
@@ -218,7 +221,7 @@ function Usage({ index }: { index: string }) {
           {measure === "writes" && (
             <span className="flex items-center gap-4">
               <span className="flex items-center gap-1.5">
-                <span className="size-2 rounded-sm bg-fg/85" /> Written
+                <span className="size-2 rounded-sm bg-fg/70" /> Written
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="size-2 rounded-sm bg-fg/25" /> Deleted

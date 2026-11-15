@@ -1,7 +1,7 @@
 // An environment is the first part of a namespace's name: `prod/website` is
 // the namespace `website` in the environment `prod` (the console calls it a
-// filesystem). A name with no `/` is in the environment `default`. The API
-// keeps each filesystem's and index's region; keys for `prod/*` reach one environment.
+// disk). A name with no `/` is in the environment `default`. The API
+// keeps each disk's and index's region; keys for `prod/*` reach one environment.
 
 export const DEFAULT = "default";
 

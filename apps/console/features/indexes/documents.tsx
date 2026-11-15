@@ -15,7 +15,7 @@ import { type FormEvent, useState } from "react";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@skywake/ui/components/sheet";
 import { cn } from "@skywake/ui/lib/utils";
-import { Button, Empty, Panel, Rows } from "@/components/kit";
+import { Button, Checkbox, Empty, Panel, Rows } from "@/components/kit";
 import {
   type AttributeValue,
   type DocId,
@@ -170,19 +170,19 @@ function Browser({ index, branch }: { index: IndexInfo; branch: string }) {
           >
             <table className="w-full text-sm">
               <thead>
-                <tr className="h-9 border-b text-left font-mono text-micro tracking-wide whitespace-nowrap text-faint uppercase">
+                <tr className="h-10 border-b text-left text-xs whitespace-nowrap text-muted-foreground">
                   <th className="w-10 pl-4">
-                    <Tick
+                    <Checkbox
                       label="Select every document on this page"
-                      checked={allSelected}
-                      onChange={() =>
+                      on={allSelected}
+                      onClick={() =>
                         setSelected(
                           allSelected ? new Set() : new Set(documents.map((d) => keyOf(d.id))),
                         )
                       }
                     />
                   </th>
-                  <th className="px-3 font-normal">Id</th>
+                  <th className="px-3 font-normal">id</th>
                   {attributes.map((name) => (
                     <th key={name} className="px-3 font-normal max-md:hidden">
                       {name}
@@ -205,13 +205,13 @@ function Browser({ index, branch }: { index: IndexInfo; branch: string }) {
                       )}
                     >
                       <td className="pl-4" onClick={(e) => e.stopPropagation()}>
-                        <Tick
+                        <Checkbox
                           label={`Select ${String(doc.id)}`}
-                          checked={selected.has(key)}
-                          onChange={() => toggle(doc.id)}
+                          on={selected.has(key)}
+                          onClick={() => toggle(doc.id)}
                         />
                       </td>
-                      <td className="max-w-56 truncate px-3 font-mono">
+                      <td className="max-w-56 truncate px-3">
                         {String(doc.id)}
                         {typeof doc.id === "string" && /^\d+$/.test(doc.id) && (
                           <span className="ml-1.5 text-xs text-faint">text</span>
@@ -325,7 +325,7 @@ function Lookup({
         value={id}
         onChange={(e) => (setError(""), setId(e.target.value))}
         disabled={busy}
-        className={cn("w-64 pl-8 font-mono max-sm:w-full", error && "bg-destructive/10")}
+        className={cn("w-64 pl-8 max-sm:w-full", error && "bg-destructive/10")}
       />
       {error && (
         <span role="alert" className="absolute top-full left-0 mt-1 text-xs text-destructive">
@@ -362,9 +362,7 @@ function Detail({
           <>
             <div className="grid gap-1 border-b px-5 pt-5 pb-4 pr-12">
               <Label>Document</Label>
-              <SheetTitle className="font-mono text-lg font-semibold break-all">
-                {String(doc.id)}
-              </SheetTitle>
+              <SheetTitle className="text-lg font-semibold break-all">{String(doc.id)}</SheetTitle>
               <SheetDescription className="text-xs text-faint">
                 {typeof doc.id === "number" ? "number id" : "string id"} · on {index.name}
               </SheetDescription>
@@ -377,7 +375,7 @@ function Detail({
               )}
               {index.schema.attributes.map((a) => (
                 <div key={a.name} className="flex min-h-8 items-baseline gap-4 py-1">
-                  <span className="w-28 shrink-0 truncate font-mono text-xs text-muted-foreground">
+                  <span className="w-28 shrink-0 truncate text-xs text-muted-foreground">
                     {a.name}
                   </span>
                   <span
@@ -388,7 +386,7 @@ function Detail({
                   >
                     {format(doc.attributes[a.name])}
                   </span>
-                  <span className="font-mono text-micro text-faint">{a.type}</span>
+                  <span className="text-micro text-faint">{a.type}</span>
                 </div>
               ))}
             </section>
@@ -547,32 +545,6 @@ function Write({
         </Button>
       </div>
     </Panel>
-  );
-}
-
-function Tick({
-  label,
-  checked,
-  onChange,
-}: {
-  label: string;
-  checked: boolean;
-  onChange: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      role="checkbox"
-      aria-checked={checked}
-      aria-label={label}
-      onClick={onChange}
-      className={cn(
-        "grid size-4 place-items-center transition-colors",
-        checked ? "bg-foreground text-background" : "bg-muted hover:bg-line",
-      )}
-    >
-      {checked && <Check className="size-3" strokeWidth={3} />}
-    </button>
   );
 }
 
