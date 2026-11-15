@@ -14,6 +14,7 @@ import type { Stores } from "../../engine/stores.ts";
 import type { Log } from "../../http/log.ts";
 import { isMissing, messageOf } from "../../http/errors.ts";
 import { Texts } from "../indexes/embeddings.ts";
+import { gramsOf } from "./grams.ts";
 import type { Models } from "../indexes/models.ts";
 import { MAIN } from "../indexes/lifecycle.ts";
 import * as indexes from "../indexes/queries.ts";
@@ -42,7 +43,7 @@ export function docId(path: string) {
 }
 
 /** `path` as a glob that matches only itself, and everything under it with `/*`. */
-function literal(path: string) {
+export function literal(path: string) {
   return path.replace(/[*?[]/g, (c) => `[${c}]`);
 }
 
@@ -282,6 +283,7 @@ class Writer {
   readonly #usage: IndexUsage;
   readonly #models: Models;
   readonly #summary: boolean;
+  readonly #grams: boolean;
   #upserts: contract.Document[] = [];
   #bytes = 0;
   #deletes: string[] = [];
@@ -301,6 +303,7 @@ class Writer {
     this.#usage = usage;
     this.#models = models;
     this.#summary = row.schema.attributes.some((column) => column.name === "summary");
+    this.#grams = row.schema.attributes.some((column) => column.name === "grams");
   }
 
   async upsert(doc: FileDoc) {
@@ -308,8 +311,10 @@ class Writer {
     this.#seen.add(id);
     const attributes: Record<string, string> = { path: doc.path, text: doc.text };
     if (this.#summary) attributes.summary = doc.text.slice(0, SUMMARY_CHARS) || doc.path;
+    if (this.#grams) attributes.grams = gramsOf(doc.text);
     this.#upserts.push({ id, vectors: {}, attributes });
-    this.#bytes += Buffer.byteLength(doc.text) + doc.path.length * 2;
+    this.#bytes +=
+      Buffer.byteLength(doc.text) + doc.path.length * 2 + (attributes.grams?.length ?? 0);
     if (this.#upserts.length >= BATCH_DOCS || this.#bytes >= BATCH_BYTES) await this.flush();
   }
 

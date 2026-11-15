@@ -85,7 +85,14 @@ export const routes = {
     branches.updateBranch,
     branches.deleteBranch,
   ],
-  files: [files.listFiles, files.readFile, files.searchFiles, files.commitFiles, files.uploadPart],
+  files: [
+    files.listFiles,
+    files.readFile,
+    files.searchFiles,
+    files.findFiles,
+    files.commitFiles,
+    files.uploadPart,
+  ],
   history: [
     history.listCommits,
     history.listChanges,

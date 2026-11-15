@@ -3,17 +3,14 @@
 use std::time::SystemTime;
 
 use futures::future::try_join_all;
-use futures::{StreamExt, TryStreamExt, stream, try_join};
-use regex::RegexBuilder;
+use futures::try_join;
 
+use super::grep::{GrepOptions, Match};
 use crate::ops::files;
 use crate::retry::{SAVE_ATTEMPTS, backoff};
 use crate::store::gc::lock;
 use crate::store::objects::{chunk_path, commit_path};
 use crate::{Change, Chunk, Commit, Data, Entry, Error, Hash, Repo, Result, Tree, Trees};
-const SEARCH_FILE_MAX: u64 = 1 << 20;
-const SEARCH_PARALLELISM: usize = 16;
-const SEARCH_LINE_MAX: usize = 500;
 
 pub struct Edit {
     pub path: String,
@@ -33,12 +30,6 @@ enum Step {
     Put(Option<Entry>),
     Copy(String),
     Folder,
-}
-
-pub struct Match {
-    pub path: String,
-    pub line: usize,
-    pub text: String,
 }
 
 impl Repo {
@@ -112,56 +103,13 @@ impl Repo {
         pattern: &str,
         limit: usize,
     ) -> Result<Vec<Match>> {
-        let pattern = RegexBuilder::new(pattern)
-            .size_limit(1 << 20)
-            .build()
-            .map_err(|error| Error::BadPattern(error.to_string()))?;
-        let (root, trees) = self.head_tree(branch).await?;
-        let tree = match files::find(&trees, root, folder).await? {
-            Some(Entry::Dir { tree }) => tree,
-            Some(_) => return Err(Error::NotAFolder(folder.to_string())),
-            None => return Err(Error::NotFound(folder.to_string())),
+        files::parts(folder)?;
+        let options = GrepOptions {
+            folder: folder.to_string(),
+            limit,
+            ..GrepOptions::default()
         };
-        let prefix: String = files::parts(folder)?
-            .iter()
-            .map(|part| format!("{part}/"))
-            .collect();
-        let candidates =
-            files::walk(&trees, tree)
-                .await?
-                .into_iter()
-                .filter_map(|(path, entry)| match entry {
-                    Entry::File { size, data, .. } if size <= SEARCH_FILE_MAX => {
-                        Some((path, data, size))
-                    }
-                    _ => None,
-                });
-        let objects = self.objects();
-        let mut reads = stream::iter(candidates)
-            .map(|(path, data, size)| async move {
-                let bytes = files::read(objects, &data, 0, size).await?;
-                Ok::<_, Error>((path, bytes))
-            })
-            .buffered(SEARCH_PARALLELISM);
-        let mut found = Vec::new();
-        while let Some((path, bytes)) = reads.try_next().await? {
-            if bytes.contains(&0) {
-                continue;
-            }
-            for (number, line) in String::from_utf8_lossy(&bytes).lines().enumerate() {
-                if pattern.is_match(line) {
-                    found.push(Match {
-                        path: format!("{prefix}{path}"),
-                        line: number + 1,
-                        text: line.chars().take(SEARCH_LINE_MAX).collect(),
-                    });
-                    if found.len() == limit {
-                        return Ok(found);
-                    }
-                }
-            }
-        }
-        Ok(found)
+        self.grep(branch, None, pattern, &options).await
     }
 
     pub async fn commit_files(

@@ -19,11 +19,17 @@ use crate::store::objects::commit_path;
 use crate::{Commit, Error, Hash, Head, Objects, Refs, Result, Tree, Trees};
 
 mod files;
+mod find;
+mod glob;
+mod grep;
 mod history;
 mod merge;
 mod save;
 
-pub use files::{Content, Edit, Match};
+pub use files::{Content, Edit};
+pub use find::{Found, Wanted};
+pub use glob::Glob;
+pub use grep::{GrepOptions, Match};
 pub use merge::{Merged, Resolution, Take};
 
 #[derive(Clone)]
@@ -61,9 +67,10 @@ impl Repo {
             None => {
                 // A branch from nothing is how a folder starts. Credentials scoped to
                 // the folder may not write the marker; GC marks such a folder later.
-                match kind::mark(self.objects.store().as_ref(), Kind::Filesystem).await {
-                    Err(error @ crate::Error::WrongKind(_)) => return Err(error),
-                    _ => {}
+                if let Err(error @ crate::Error::WrongKind(_)) =
+                    kind::mark(self.objects.store().as_ref(), Kind::Filesystem).await
+                {
+                    return Err(error);
                 }
                 let empty = Tree::new();
                 let packs = Packs {

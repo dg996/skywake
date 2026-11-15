@@ -404,3 +404,76 @@ async fn the_hash_of_an_autosave_head_can_be_used_later() {
     assert_eq!(bytes, b"2");
     assert_eq!(text(&repo, "copy").await, "2");
 }
+
+fn found_paths(found: Vec<skywake_core::Found>) -> Vec<String> {
+    found.into_iter().map(|f| f.path).collect()
+}
+
+#[tokio::test]
+async fn find_matches_names_and_paths_without_reading_files() {
+    use skywake_core::Wanted;
+    let repo = setup().await;
+    let edits = vec![
+        put("README.md", "top"),
+        put("src/a.ts", "export const a = 1;"),
+        put("src/deep/b.ts", "export const b = 2;"),
+        put("src/deep/c.tsx", "x"),
+        put("docs/README.md", "docs"),
+    ];
+    repo.commit_files("main", "files", None, edits)
+        .await
+        .unwrap();
+
+    let found = repo
+        .find("main", None, "", "*.ts", Wanted::Files, 100)
+        .await;
+    assert_eq!(found_paths(found.unwrap()), ["src/a.ts", "src/deep/b.ts"]);
+    let found = repo
+        .find("main", None, "", "README.md", Wanted::Any, 100)
+        .await;
+    assert_eq!(found_paths(found.unwrap()), ["README.md", "docs/README.md"]);
+    let found = repo
+        .find("main", None, "", "src/*", Wanted::Folders, 100)
+        .await;
+    assert_eq!(found_paths(found.unwrap()), ["src/deep"]);
+    let found = repo
+        .find("main", None, "src", "**/*.ts*", Wanted::Files, 2)
+        .await;
+    assert_eq!(found.unwrap().len(), 2);
+    let found = repo
+        .find("main", None, "", "nowhere/**/*", Wanted::Any, 10)
+        .await;
+    assert!(found.unwrap().is_empty());
+}
+
+#[tokio::test]
+async fn grep_searches_only_the_paths_it_is_given() {
+    use skywake_core::GrepOptions;
+    let repo = setup().await;
+    let edits = vec![
+        put("a.txt", "Needle here\nnothing"),
+        put("b.txt", "needle too"),
+        put("c.md", "a needle in markdown"),
+    ];
+    repo.commit_files("main", "files", None, edits)
+        .await
+        .unwrap();
+    let options = GrepOptions {
+        ignore_case: true,
+        only: Some(vec!["a.txt".into(), "c.md".into(), "gone.txt".into()]),
+        limit: 100,
+        ..GrepOptions::default()
+    };
+    let found = repo.grep("main", None, "needle", &options).await.unwrap();
+    let lines: Vec<(String, usize)> = found.into_iter().map(|m| (m.path, m.line)).collect();
+    assert_eq!(lines, [("a.txt".to_string(), 1), ("c.md".to_string(), 1)]);
+
+    let options = GrepOptions {
+        glob: Some("*.txt".into()),
+        limit: 100,
+        ..GrepOptions::default()
+    };
+    let found = repo.grep("main", None, "needle", &options).await.unwrap();
+    let paths: Vec<String> = found.into_iter().map(|m| m.path).collect();
+    assert_eq!(paths, ["b.txt"]);
+}

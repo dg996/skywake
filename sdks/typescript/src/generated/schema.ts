@@ -575,8 +575,31 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Finds lines that match a regular expression, like `grep -rn`. Skips binary files and files over 1 MiB. */
+        /**
+         * Finds lines that match a regular expression, like `grep -rn`. Skips binary files and files over 1 MiB.
+         * @description On a branch whose namespace has a linked index, only the files that hold every trigram the pattern needs are read, and files changed since the index last caught up are read too, so a search over a huge tree takes about as long as one over the files that can match. Such a search covers the files the link indexes; the `skywake-searched` header says `index` or `scan`.
+         */
         get: operations["searchFiles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/namespaces/{namespace}/branches/{branch}/find": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Finds paths by name or glob, like `find` or `fd`, without reading any file.
+         * @description A glob without `/` matches a name at any depth (`*.ts`); with one it matches the whole path (`src/**\/*.test.ts`). `*` and `?` stay within one folder, `**` crosses any number.
+         */
+        get: operations["findFiles"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1799,6 +1822,14 @@ export interface components {
             /** @description Starts at 1. */
             line: number;
             text: string;
+        };
+        FoundPath: {
+            /** @description From the root of the branch. */
+            path: string;
+            /** @enum {string} */
+            kind: "file" | "folder" | "symlink";
+            /** @description In bytes, for a file. 0 otherwise. */
+            size: number;
         };
         Committed: {
             /** @description The branch's head after the call. */
@@ -5842,6 +5873,10 @@ export interface operations {
                 pattern: string;
                 /** @description Search only under this folder. */
                 path?: string;
+                /** @description Search only paths this glob matches. Without `/` it matches a name at any depth. */
+                glob?: string;
+                /** @description Match letters of either case. False by default. */
+                ignoreCase?: "true" | "false";
                 /** @description The most matches to return. 100 by default. */
                 limit?: number | null;
             };
@@ -5863,6 +5898,86 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Match"][];
+                };
+            };
+            /** @description The request is not valid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description A valid API key or token is needed. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description The caller may not do this. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description It does not exist, or the caller cannot see it. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Too many requests. Wait for `Retry-After` seconds. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    findFiles: {
+        parameters: {
+            query: {
+                glob: string;
+                /** @description Find only under this folder. */
+                path?: string;
+                /** @description `files` (with symlinks), `folders`, or `any` by default. */
+                kind?: "any" | "files" | "folders";
+                /** @description Read an older commit of the branch instead of its head. */
+                at?: string;
+                /** @description The most paths to return. 1,000 by default, at most 100,000. */
+                limit?: number | null;
+            };
+            header?: never;
+            path: {
+                /** @description A namespace of your organization, such as `prod/app`, or `<org>:<namespace>` for a public namespace of another one. Encode `/` as `%2F`. */
+                namespace: string;
+                /** @description A branch, such as `main` or `agents/fix-1`. Encode `/` as `%2F`. */
+                branch: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The paths, in name order. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FoundPath"][];
                 };
             };
             /** @description The request is not valid. */
