@@ -1,6 +1,8 @@
 import { files, search, type StatGroup } from "@/content/numbers";
 import { pagePaths, pages } from "@/content/pages";
 import { site } from "@/content/site";
+import { en } from "@/content/messages/en";
+import { useCases } from "@/content/use-cases";
 
 const url = (path: string) => new URL(path, site.url).toString();
 const docs = new URL(site.docsUrl, site.url).toString().replace(/\/$/, "");
@@ -35,6 +37,10 @@ Agents use it through an MCP server (\`uvx skywake-mcp\`), the \`skywake\` CLI, 
 ## Pages
 
 ${pagePaths.map((path) => `- [${pages[path].title}](${url(path)}): ${pages[path].description}`).join("\n")}
+
+## Use case guides
+
+${useCases.map(({ id }) => `- [${en.guides.items[id]!.title}](${url(`/use-cases/${id}`)}): ${en.guides.items[id]!.lead}`).join("\n")}
 
 ## Benchmarks
 

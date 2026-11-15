@@ -1,4 +1,36 @@
 @import "@skywake/ui/globals.css";
+@import "fumadocs-ui/css/preset.css";
+
+/* Fumadocs' parts, used by the use case guides, on the site's own colours.
+   Not `inline`: Fumadocs' CSS reads these variables directly. Same as the docs app. */
+@theme static {
+  --color-fd-background: var(--background);
+  --color-fd-foreground: var(--foreground);
+  --color-fd-muted: var(--muted);
+  --color-fd-muted-foreground: var(--muted-foreground);
+  --color-fd-popover: var(--popover);
+  --color-fd-popover-foreground: var(--popover-foreground);
+  --color-fd-card: var(--card);
+  --color-fd-card-foreground: var(--card-foreground);
+  --color-fd-border: var(--border);
+  --color-fd-primary: var(--signal);
+  --color-fd-primary-foreground: var(--background);
+  --color-fd-secondary: var(--secondary);
+  --color-fd-secondary-foreground: var(--secondary-foreground);
+  --color-fd-accent: var(--soft);
+  --color-fd-accent-foreground: var(--foreground);
+  --color-fd-ring: var(--signal);
+  --color-fd-info: var(--muted-foreground);
+  --color-fd-idea: var(--signal);
+  --color-fd-warning: var(--amber);
+  --color-fd-error: var(--destructive);
+  --color-fd-success: var(--green);
+  --color-fd-overlay: rgb(0 0 0 / 0.2);
+  --color-fd-diff-remove: color-mix(in oklab, var(--destructive) 12%, transparent);
+  --color-fd-diff-remove-symbol: var(--destructive);
+  --color-fd-diff-add: color-mix(in oklab, var(--green) 12%, transparent);
+  --color-fd-diff-add-symbol: var(--green);
+}
 
 @theme inline {
   --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
@@ -6,7 +38,6 @@
 }
 
 :root {
-  --radius: 1.125rem;
   --signal: #2f5bea;
   --love: #e5484d;
   --card: #efeee9;
@@ -14,27 +45,28 @@
   --hairline: color-mix(in oklab, var(--foreground) 8%, transparent);
 }
 
+/* Dark, the default: a near-black page with soft grey text. Light uses the shared tokens. */
 .dark {
-  --signal: #7090ff;
+  --signal: #7b8cff;
   --love: #ff6369;
-  --background: #141416;
-  --foreground: #ececea;
-  --card: #1a1a1d;
-  --card-foreground: #ececea;
-  --popover: #1d1d20;
-  --popover-foreground: #ececea;
-  --primary: #ececea;
-  --primary-foreground: #141416;
-  --secondary: #202023;
-  --secondary-foreground: #ececea;
-  --muted: #232326;
-  --muted-foreground: #9a9a9e;
-  --accent: #232326;
-  --accent-foreground: #ececea;
-  --border: rgb(255 255 255 / 0.09);
-  --input: rgb(255 255 255 / 0.12);
-  --soft: color-mix(in oklab, var(--foreground) 6%, transparent);
-  --hairline: color-mix(in oklab, var(--foreground) 9%, transparent);
+  --background: #08090a;
+  --foreground: #f7f8f8;
+  --card: #0f1011;
+  --card-foreground: #f7f8f8;
+  --popover: #141516;
+  --popover-foreground: #f7f8f8;
+  --primary: #f7f8f8;
+  --primary-foreground: #08090a;
+  --secondary: #1a1b1e;
+  --secondary-foreground: #f7f8f8;
+  --muted: #1a1b1e;
+  --muted-foreground: #8a8f98;
+  --accent: #1a1b1e;
+  --accent-foreground: #f7f8f8;
+  --border: rgb(255 255 255 / 0.08);
+  --input: rgb(255 255 255 / 0.1);
+  --soft: color-mix(in oklab, var(--foreground) 4%, transparent);
+  --hairline: color-mix(in oklab, var(--foreground) 8%, transparent);
 }
 
 :root {
@@ -58,8 +90,8 @@ html {
 
 @layer components {
   .t-display {
-    font-size: clamp(2.5rem, 1.7rem + 2.4vw, 3.75rem);
-    line-height: 1.04;
+    font-size: clamp(2.35rem, 1.45rem + 2.6vw, 3.65rem);
+    line-height: 1.05;
     font-weight: 500;
     letter-spacing: -0.04em;
     text-wrap: balance;
@@ -97,10 +129,16 @@ html {
     line-height: 1.5;
   }
   .t-eyebrow {
-    font-family: var(--font-mono);
+    font-family:
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      "Segoe UI",
+      sans-serif;
     font-size: 0.75rem;
+    font-weight: 500;
     line-height: 1;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
   }
   .t-num {
@@ -126,7 +164,7 @@ html {
     flex-shrink: 0;
     align-items: center;
     gap: 0.5rem;
-    border-radius: var(--radius-md);
+    border-radius: 0.9rem;
     padding-inline: 1.25rem;
     font-size: 0.875rem;
     font-weight: 500;
@@ -191,36 +229,6 @@ html {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-}
-
-.cta-glow,
-.cta-grain {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-}
-.cta-glow {
-  background:
-    radial-gradient(
-      60% 80% at 15% 110%,
-      color-mix(in oklab, var(--signal) 55%, transparent),
-      transparent 70%
-    ),
-    radial-gradient(
-      50% 70% at 90% -10%,
-      color-mix(in oklab, #8b5cf6 40%, transparent),
-      transparent 70%
-    ),
-    radial-gradient(
-      40% 50% at 55% 50%,
-      color-mix(in oklab, var(--signal) 12%, transparent),
-      transparent 70%
-    );
-}
-.cta-grain {
-  opacity: 0.22;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
 .oss-love {
@@ -289,18 +297,6 @@ html {
   }
 }
 
-/* An SVG line that draws itself in (set pathLength={1} on the shape). */
-.draw-line {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: draw-line 0.9s ease-out forwards;
-}
-@keyframes draw-line {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
 /* Text with a light that sweeps across it every few seconds. */
 .shimmer-text {
   background: linear-gradient(
@@ -323,12 +319,38 @@ html {
   }
 }
 
+/* Cards fade up as they scroll into view. Browsers without scroll timelines show them as is. */
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: reveal linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 40%;
+  }
+}
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* A dashed SVG line whose dashes drift slowly along it. */
+.dash-flow {
+  animation: dash-flow 1.6s linear infinite;
+}
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
   .rise-in,
-  .draw-line,
+  .reveal,
+  .dash-flow,
   .shimmer-text,
   .oss-glow,
   .oss-warm,
@@ -339,22 +361,60 @@ html {
   .echo {
     opacity: 0;
   }
-  .draw-line {
-    stroke-dashoffset: 0;
-  }
 }
 
-.section-label {
-  counter-increment: section;
+/* Stage lighting for the product shot: a soft light from above, and a bottom
+   edge that fades into the dark page. */
+.stage {
+  position: relative;
+  isolation: isolate;
 }
-.section-label::before {
-  content: counter(section, decimal-leading-zero) " · ";
+.stage::before {
+  content: "";
+  position: absolute;
+  inset: -45% -25% 25%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(40% 45% at 50% 40%, var(--stage-light), transparent 75%);
+}
+/* The glow is for the dark page only. On the light page it looks like a smudge. */
+:root {
+  --stage-light: transparent;
+  /* Code colours in guides: strings and numbers. Keywords use the accent. */
+  --code-string: #2f8a5f;
+  --code-number: #b26a12;
+}
+.dark {
+  --stage-light: color-mix(in oklab, var(--foreground) 10%, transparent);
+  --code-string: #5cc495;
+  --code-number: #e3a857;
+}
+/* A console screenshot's frame: a bright top edge catches the light. The edge sits
+   on top, or the image would hide it. With a shadow, fade it out with a mask on its
+   parent, so the mask doesn't cut off the shadow. */
+.screen-frame {
+  position: relative;
+  border-color: color-mix(in oklab, var(--foreground) 14%, transparent);
+}
+/* The shadow, only where the frame has room around it for the shadow to fall. */
+.screen-lift {
+  box-shadow: -12px -12px 40px -20px color-mix(in oklab, var(--foreground) 30%, transparent);
+}
+.dark .screen-lift {
+  box-shadow: -12px -12px 40px -20px rgb(0 0 0 / 0.9);
+}
+.screen-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 1px 1px 0 0 rgb(255 255 255 / 0.9);
+}
+.dark .screen-frame::after {
+  box-shadow: inset 1px 1px 0 0 color-mix(in oklab, var(--foreground) 10%, transparent);
 }
 
-.hatch {
-  background-image: repeating-linear-gradient(
-    135deg,
-    color-mix(in oklab, var(--foreground) 14%, transparent) 0 1px,
-    transparent 1px 8px
-  );
+.stage-screen {
+  mask-image: linear-gradient(to bottom, #000 55%, transparent 98%);
 }

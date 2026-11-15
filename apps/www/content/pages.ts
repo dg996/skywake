@@ -2,9 +2,9 @@ export type Page = { title: string; description: string; priority: number };
 
 export const pages = {
   "/": {
-    title: "Skywake: Fast filesystem and search on S3 for AI agents",
+    title: "Skywake: A scalable filesystem and search engine for AI agents",
     description:
-      "Open-source filesystem and search on your own S3 bucket. Mount it like a local disk, give every AI agent its own copy in 10 ms, and search it.",
+      "Open-source filesystem and hybrid search on your own S3 bucket. Fork a workspace for every agent in milliseconds, mount it like a local disk, and search by meaning or keyword.",
     priority: 1,
   },
   "/filesystem": {
@@ -19,28 +19,23 @@ export const pages = {
       "Vector, full-text and hybrid search straight from your own object storage. 10 ms warm queries over 10M vectors, and no separate database to run.",
     priority: 0.9,
   },
-  "/agents": {
-    title: "MCP server, CLI and SDKs for AI agents",
-    description:
-      "Give agents files and search through an MCP server, one CLI, a web console, and SDKs in TypeScript, Python, Go, Rust, Ruby, Java and C#.",
-    priority: 0.8,
-  },
   "/use-cases": {
-    title: "Use cases: agent sandboxes, RL environments, CI",
+    title: "Use cases: knowledge bases, agent memory, coding agents and more",
     description:
-      "Sandboxes, RL environments, CI, preview environments, datasets and shared data on one bucket, step by step.",
+      "How teams use Skywake for knowledge bases, agent memory, sandboxes, coding and document agents, evals, CI and datasets, step by step.",
     priority: 0.7,
   },
   "/pricing": {
     title: "Pricing",
-    description: "Pay for what you use, from $0. Self-hosting the open-source version is free.",
+    description:
+      "Free to self-host, with every feature and no limits. Skywake Cloud is in private beta.",
     priority: 0.8,
   },
-  "/enterprise": {
-    title: "Enterprise",
+  "/benchmarks": {
+    title: "Benchmarks",
     description:
-      "Single sign-on, audit log, IP allowlist, scoped keys, regions, or the whole stack in your own cloud.",
-    priority: 0.6,
+      "Measured on AWS with the bucket in the same region: agent copies, uploads and builds, and search over 10M vectors.",
+    priority: 0.7,
   },
   "/privacy": {
     title: "Privacy",

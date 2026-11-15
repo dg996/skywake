@@ -3,15 +3,10 @@
 import { ArrowRight, Check } from "lucide-react";
 import { useActionState } from "react";
 
+import type { HomeMessages } from "@/content/messages";
 import { joinWaitlist, type WaitlistState } from "@/server/join-waitlist";
 
-const messages: Record<Exclude<WaitlistState["status"], "idle" | "joined">, string> = {
-  invalid: "Enter a valid email address.",
-  off: "The waitlist isn't open yet. Try again soon.",
-  error: "Something went wrong on our side. Try again.",
-};
-
-export function WaitlistForm() {
+export function WaitlistForm({ t }: { t: HomeMessages["waitlist"]["form"] }) {
   const [state, action, pending] = useActionState<WaitlistState, FormData>(joinWaitlist, {
     status: "idle",
   });
@@ -20,7 +15,7 @@ export function WaitlistForm() {
     return (
       <p className="t-body flex h-14 items-center gap-2">
         <Check className="size-4" />
-        You&apos;re on the list. We&apos;ll email you when Cloud opens.
+        {t.joined}
       </p>
     );
   }
@@ -34,7 +29,7 @@ export function WaitlistForm() {
           required
           autoComplete="email"
           placeholder="you@company.com"
-          aria-label="Email"
+          aria-label={t.email}
           className="t-body min-w-0 flex-1 bg-transparent text-background outline-none placeholder:text-background/45"
         />
         <input name="website" tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />
@@ -43,12 +38,12 @@ export function WaitlistForm() {
           disabled={pending}
           className="btn h-full shrink-0 rounded-full bg-background text-foreground hover:opacity-90 disabled:opacity-60"
         >
-          {pending ? "Joining…" : "Join waitlist"} <ArrowRight className="size-3.5" />
+          {pending ? t.joining : t.join} <ArrowRight className="size-3.5" />
         </button>
       </div>
       {state.status !== "idle" && (
         <p role="alert" className="t-small mt-3 text-background/70">
-          {messages[state.status]}
+          {t[state.status]}
         </p>
       )}
     </form>

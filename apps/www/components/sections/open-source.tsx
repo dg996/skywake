@@ -1,8 +1,9 @@
-import { ArrowUpRight } from "lucide-react";
+// Open source: a field of stack icons around a beating heart.
 import {
   siApache,
   siDocker,
   siDotnet,
+  siGithub,
   siGo,
   siHelm,
   siKubernetes,
@@ -16,8 +17,10 @@ import {
 } from "simple-icons";
 
 import { BrandIcon } from "@/components/ui/brand-icon";
-import { CARD, Container, Section } from "@/components/ui/section";
+import type { HomeMessages } from "@/content/messages";
 import { site } from "@/content/site";
+import { Band } from "@/components/ui/frame";
+import { Statement } from "@/components/ui/statement";
 
 const HEART =
   "M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z";
@@ -34,6 +37,7 @@ const ICONS: SimpleIcon[] = [
   siOpenjdk,
   siHelm,
   siDotnet,
+  siGithub,
   siApache,
 ];
 const COLS = 15;
@@ -57,30 +61,31 @@ function Tile({ index }: { index: number }) {
   );
 }
 
-function StarButton() {
-  if (!site.repoUrl) return null;
+export function OpenSource({ t }: { t: HomeMessages }) {
+  const [before, after] = t.openSource.title.split("Apache 2.0");
   return (
-    <a href={site.repoUrl} className="btn btn-secondary">
-      Star on GitHub <ArrowUpRight className="size-4" />
-    </a>
-  );
-}
-
-export function OpenSource() {
-  return (
-    <Section
-      id="open-source"
-      label="Open source"
-      title={
-        <>
-          Skywake is <span className="text-signal">Apache 2.0</span>,{" "}
-          <span className="text-muted-foreground">so that you can contribute & self host.</span>
-        </>
-      }
-      action={<StarButton />}
-    >
-      <Container>
-        <div className={`${CARD} relative h-[440px] overflow-hidden`}>
+    <>
+      <Statement
+        id="open-source"
+        pill={t.openSource.label}
+        title={
+          <>
+            {before}
+            <span className="text-signal">Apache 2.0</span>
+            {after}
+          </>
+        }
+        line={t.openSource.line}
+        action={
+          site.repoUrl ? (
+            <a href={site.repoUrl} className="btn btn-sm btn-secondary">
+              <BrandIcon icon={siGithub} className="size-3.5" /> {t.openSource.star}
+            </a>
+          ) : undefined
+        }
+      />
+      <Band className="h-[440px]">
+        <div className="absolute inset-0 overflow-hidden">
           <div
             aria-hidden
             className="absolute top-1/2 left-1/2 grid -translate-x-1/2 -translate-y-1/2 gap-3 [mask-image:radial-gradient(closest-side,black_40%,transparent)]"
@@ -104,7 +109,7 @@ export function OpenSource() {
             <path d={HEART} className="beat" />
           </svg>
         </div>
-      </Container>
-    </Section>
+      </Band>
+    </>
   );
 }

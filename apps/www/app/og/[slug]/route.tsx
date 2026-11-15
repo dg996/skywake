@@ -16,7 +16,7 @@ export async function GET(_request: Request, { params }: RouteContext<"/og/[slug
   const { title, description } = pages[path];
   const headline = path === "/" ? "Fast files and search for your agents and apps." : title;
 
-  return new ImageResponse(
+  const image = (
     <div
       style={{
         width: "100%",
@@ -42,7 +42,7 @@ export async function GET(_request: Request, { params }: RouteContext<"/og/[slug
           {description}
         </div>
       </div>
-    </div>,
-    { width: 1200, height: 630 },
+    </div>
   );
+  return new ImageResponse(image, { width: 1200, height: 630 });
 }

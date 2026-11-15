@@ -20,6 +20,15 @@ export type Stat = { figure: string; label: string; icon: StatIcon };
 
 export type StatGroup = { claim: string; line: string; href?: string; stats: Stat[] };
 
+/** One measured result: the takeaway in words, then the bars that back it up, drawn to one scale. */
+type Bar = { value: number; figure: string; lit?: boolean };
+
+export type Comparison = {
+  title: string;
+  verdict: string;
+  rows: (Bar & { label: string })[];
+};
+
 export const files = {
   setup: "Fork, branch and synced writes with the cache tier",
   groups: [
@@ -60,6 +69,23 @@ export const files = {
   ] satisfies StatGroup[],
 };
 
+// Pairs from the AWS run in docs/benchmarks.md. The words for each pair are in
+// messages.benchmarkPage, in the same order.
+export const filesBars: Bar[][] = [
+  [
+    { value: 0.095, figure: "95 ms", lit: true },
+    { value: 28.7, figure: "28.7 s" },
+  ],
+  [
+    { value: 6.4, figure: "6.4 s", lit: true },
+    { value: 28.7, figure: "28.7 s" },
+  ],
+  [
+    { value: 85.0, figure: "85.0 s", lit: true },
+    { value: 84.5, figure: "84.5 s" },
+  ],
+];
+
 export const search = {
   setup: "10M vectors × 768 on S3, AWS i4i.4xlarge in the same region",
   groups: [
@@ -98,17 +124,17 @@ export const search = {
   ] satisfies StatGroup[],
 };
 
-export const headline: StatGroup[] = [
-  {
-    claim: "Filesystem",
-    line: "A workspace for every agent, that never loses work.",
-    href: "/filesystem#benchmarks",
-    stats: [files.groups[0]!.stats[0]!, files.groups[2]!.stats[0]!],
-  },
-  {
-    claim: "Search",
-    line: "10M vectors, searched straight from object storage.",
-    href: "/search#benchmarks",
-    stats: [search.groups[0]!.stats[1]!, search.groups[0]!.stats[0]!],
-  },
+export const searchBars: Bar[][] = [
+  [
+    { value: 10, figure: "10 ms", lit: true },
+    { value: 411, figure: "411 ms" },
+  ],
+  [
+    { value: 24, figure: "24 ms", lit: true },
+    { value: 10, figure: "10 ms" },
+  ],
+  [
+    { value: 95, figure: "95%", lit: true },
+    { value: 97, figure: "97%", lit: true },
+  ],
 ];

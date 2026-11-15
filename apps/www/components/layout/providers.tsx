@@ -5,8 +5,9 @@ import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
 
 export function Providers({ children }: { children: ReactNode }) {
+  // Dark first; the reader can switch to light, and the choice is kept on their device.
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+    <ThemeProvider attribute="class" defaultTheme="dark" disableTransitionOnChange>
       <MotionConfig reducedMotion="user">{children}</MotionConfig>
     </ThemeProvider>
   );

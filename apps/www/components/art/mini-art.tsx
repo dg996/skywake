@@ -13,8 +13,6 @@ import {
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
-import type { MiniArtName } from "@/content/products";
-
 function useTick(ms: number) {
   const [n, setN] = useState(0);
   useEffect(() => {
@@ -665,6 +663,24 @@ function TimeTravelMini() {
     </div>
   );
 }
+
+// The feature pictures, by name.
+export type MiniArtName =
+  | "fork"
+  | "mount"
+  | "autosave"
+  | "recover"
+  | "diff"
+  | "merge"
+  | "protect"
+  | "vector"
+  | "fullText"
+  | "hybrid"
+  | "sparse"
+  | "late"
+  | "analytics"
+  | "branches"
+  | "timeTravel";
 
 const ART: Record<MiniArtName, () => ReactNode> = {
   fork: ForkMini,
