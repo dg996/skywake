@@ -24,6 +24,8 @@ const REPACK_MIN: u64 = 4 * 1024 * 1024;
 const ENTRY_MIN: usize = 4;
 
 const PARALLELISM: usize = 16;
+const PREFETCH_AT_ONCE: usize = 64;
+const LISTED_MAX: usize = 256;
 
 const PARTS_KEPT: usize = 256;
 
@@ -40,6 +42,7 @@ struct Known {
     parts: HashMap<Hash, Arc<Vec<Hash>>>,
     stored_parts: HashSet<Hash>,
     part_trees: HashMap<Hash, Arc<Tree>>,
+    inside: HashMap<Hash, Vec<(Hash, Hash)>>,
     loads: HashMap<Hash, Arc<OnceCell<()>>>,
     since: Option<SystemTime>,
 }
@@ -82,13 +85,14 @@ impl Trees {
         if Arc::ptr_eq(&self.known, &other.known) {
             return;
         }
-        let (trees, packs, parts, stored_parts, since) = {
+        let (trees, packs, parts, stored_parts, inside, since) = {
             let other = other.lock();
             (
                 other.trees.clone(),
                 other.packs.clone(),
                 other.parts.clone(),
                 other.stored_parts.clone(),
+                other.inside.clone(),
                 other.since(),
             )
         };
@@ -104,6 +108,9 @@ impl Trees {
             known.parts.entry(hash).or_insert(list);
         }
         known.stored_parts.extend(stored_parts);
+        for (pack, list) in inside {
+            known.inside.entry(pack).or_insert(list);
+        }
     }
 
     pub async fn get(&self, hash: Hash) -> Result<Arc<Tree>> {
@@ -233,6 +240,29 @@ impl Trees {
         Ok(part)
     }
 
+    pub async fn prefetch(&self) {
+        let mut asked = HashSet::new();
+        loop {
+            let todo: Vec<(Hash, Arc<OnceCell<()>>)> = {
+                let mut known = self.lock();
+                let packs: HashSet<Hash> = known.packs.values().copied().collect();
+                packs
+                    .into_iter()
+                    .filter(|pack| asked.insert(*pack))
+                    .map(|pack| (pack, known.loads.entry(pack).or_default().clone()))
+                    .collect()
+            };
+            if todo.is_empty() {
+                return;
+            }
+            stream::iter(todo)
+                .for_each_concurrent(PREFETCH_AT_ONCE, |(pack, load)| async move {
+                    let _ = load.get_or_try_init(|| self.load(pack)).await;
+                })
+                .await;
+        }
+    }
+
     async fn load(&self, pack: Hash) -> Result<()> {
         self.learn(pack, self.objects.get(pack).await?)
     }
@@ -277,9 +307,10 @@ impl Trees {
             known.stored_parts.extend(parts.iter().copied());
             known.parts.entry(hash).or_insert_with(|| Arc::new(parts));
         }
-        for (tree, pack) in loaded.packed {
-            known.packs.entry(tree).or_insert(pack);
+        for (tree, child) in &loaded.packed {
+            known.packs.entry(*tree).or_insert(*child);
         }
+        known.inside.entry(pack).or_insert(loaded.packed);
         Ok(())
     }
 
@@ -306,7 +337,7 @@ impl Trees {
             let known = self.lock();
             let recent = known.unpacked(root)?;
             if fits(recent.iter().map(|(_, tree)| &**tree))? {
-                let packs = Packs {
+                let mut packs = Packs {
                     packed: known.packed_under(root, recent.iter().map(|(_, tree)| &**tree)),
                     recent: recent
                         .into_iter()
@@ -315,6 +346,7 @@ impl Trees {
                     ..*current
                 };
                 if postcard::to_stdvec(&packs)?.len() <= RECENT_MAX {
+                    packs.packed = known.listed(packs.packed);
                     return Ok((packs, Vec::new(), Vec::new()));
                 }
             }
@@ -345,6 +377,10 @@ impl Trees {
         let mut known = self.lock();
         for pack in new {
             let hash = Objects::address(pack)?;
+            known
+                .inside
+                .entry(hash)
+                .or_insert_with(|| pack.packed.clone());
             for (tree, _) in &pack.trees {
                 known.packs.insert(*tree, hash);
             }
@@ -432,6 +468,26 @@ impl Known {
             }
         }
         found
+    }
+
+    pub(super) fn listed(&self, packed: Vec<(Hash, Hash)>) -> Vec<(Hash, Hash)> {
+        let mut seen: HashSet<(Hash, Hash)> = packed.iter().copied().collect();
+        let mut listed = packed;
+        let inside = listed
+            .iter()
+            .filter_map(|(_, pack)| self.inside.get(pack))
+            .flatten()
+            .copied()
+            .collect::<Vec<_>>();
+        for pair in inside {
+            if listed.len() >= LISTED_MAX {
+                break;
+            }
+            if seen.insert(pair) {
+                listed.push(pair);
+            }
+        }
+        listed
     }
 
     fn packed_under<'a>(

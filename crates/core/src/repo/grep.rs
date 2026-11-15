@@ -209,6 +209,9 @@ fn matching_lines(text: &[u8], pattern: &Regex, mut each: impl FnMut(usize, &[u8
 }
 
 async fn everything(trees: &Trees, root: Hash, scope: &Scope) -> Result<Vec<(String, Entry)>> {
+    if scope.folder.is_empty() {
+        trees.prefetch().await;
+    }
     let tree = match files::find(trees, root, &scope.folder).await? {
         Some(Entry::Dir { tree }) => tree,
         Some(_) => return Err(Error::NotAFolder(scope.folder.clone())),

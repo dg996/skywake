@@ -42,6 +42,9 @@ impl Repo {
             return Ok(Vec::new());
         };
         let (root, trees) = self.tree_at(branch, at).await?;
+        if start.is_empty() {
+            trees.prefetch().await;
+        }
         let tree = match files::find(&trees, root, &start).await? {
             Some(Entry::Dir { tree }) => tree,
             Some(_) => return Err(Error::NotAFolder(start)),
