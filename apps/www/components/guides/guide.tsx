@@ -177,7 +177,10 @@ export function Prose({ children, className }: { children: ReactNode; className?
 const LANGS: Record<string, string> = { ts: "ts", tsx: "tsx", js: "js", py: "python", sh: "bash" };
 
 /** A file of code, with its name on a tab. Fumadocs' code block: highlighted, scrolls on its own, with a copy button. */
-export function Code({ file, code }: { file: string; code: string }) {
+export async function Code({ file, code }: { file: string; code: string }) {
+  // Cached so the highlighting happens once, at build time. Without it the
+  // highlighter reads the clock and the page can't be prerendered.
+  "use cache";
   return (
     <ServerCodeBlock
       code={code.trim()}

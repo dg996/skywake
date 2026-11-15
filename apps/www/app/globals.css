@@ -129,7 +129,12 @@ html {
     line-height: 1.5;
   }
   .t-eyebrow {
-    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-family:
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      "Segoe UI",
+      sans-serif;
     font-size: 0.75rem;
     font-weight: 500;
     line-height: 1;
