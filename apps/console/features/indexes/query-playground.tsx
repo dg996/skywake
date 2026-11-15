@@ -167,16 +167,47 @@ export function QueryPlayground({ index, branch }: { index: IndexInfo; branch: s
     setBusy(false);
   }
 
-  const vectorFields = (
+  const topKField = (
     <label className="grid gap-1.5">
-      <Label>{`Vector · ${dims ?? "?"} numbers`}</Label>
-      <TextArea
-        value={vector}
-        onChange={(e) => setVector(e.target.value)}
-        placeholder="[0.12, -0.03, 0.88, …]"
-        className="min-h-20"
+      <Label>Top k</Label>
+      <TextField
+        type="number"
+        min={1}
+        max={1000}
+        value={topK}
+        onChange={(e) => setTopK(Number(e.target.value))}
+        className="w-20 tabular-nums"
       />
     </label>
+  );
+
+  const vectorFields = (
+    <div className="grid gap-3">
+      <label className="grid gap-1.5">
+        <Label>{`Vector · ${dims ?? "?"} numbers`}</Label>
+        <TextArea
+          value={vector}
+          onChange={(e) => setVector(e.target.value)}
+          placeholder="[0.12, -0.03, 0.88, …]"
+          className="min-h-20"
+        />
+      </label>
+      <div className="flex flex-wrap items-end gap-3">
+        {topKField}
+        <Recall value={recall} onChange={setRecall} overridden={!!probe} />
+        <label className="grid gap-1.5">
+          <Label>Probe</Label>
+          <TextField
+            type="number"
+            min={1}
+            placeholder="auto"
+            value={probe}
+            onChange={(e) => setProbe(e.target.value)}
+            className="w-20 tabular-nums"
+          />
+        </label>
+      </div>
+    </div>
   );
 
   const textFields = (
@@ -187,9 +218,11 @@ export function QueryPlayground({ index, branch }: { index: IndexInfo; branch: s
           value={words}
           onChange={(e) => setWords(e.target.value)}
           placeholder="reset password"
+          className="h-10 px-3 text-[15px]"
         />
       </label>
       <div className="flex flex-wrap items-end gap-3">
+        {kind === "text" && topKField}
         {texts.map((a) => (
           <label key={a.name} className="grid gap-1.5">
             <Label>{`${a.name} boost`}</Label>
@@ -200,7 +233,7 @@ export function QueryPlayground({ index, branch }: { index: IndexInfo; branch: s
               placeholder="1"
               value={boosts[a.name] ?? ""}
               onChange={(e) => setBoosts({ ...boosts, [a.name]: e.target.value })}
-              className="w-24 tabular-nums"
+              className="w-20 tabular-nums"
             />
           </label>
         ))}
@@ -236,7 +269,7 @@ export function QueryPlayground({ index, branch }: { index: IndexInfo; branch: s
   return (
     <div className="grid gap-10">
       <form onSubmit={run} className="grid gap-5">
-        <div className="flex flex-wrap items-end gap-3">
+        <div className="flex flex-wrap items-end gap-3 empty:hidden">
           {kinds.length > 1 && (
             <div className="grid gap-1.5">
               <Label>Search</Label>
@@ -254,45 +287,13 @@ export function QueryPlayground({ index, branch }: { index: IndexInfo; branch: s
           {kind !== "text" && (
             <label className="grid gap-1.5">
               <Label>Column</Label>
-              <Select
-                value={column}
-                onChange={(e) => setColumn(e.target.value)}
-                className="font-mono"
-              >
+              <Select value={column} onChange={(e) => setColumn(e.target.value)}>
                 {schema.vectors.map((v) => (
                   <option key={v.name}>{v.name}</option>
                 ))}
               </Select>
             </label>
           )}
-          <label className="grid gap-1.5">
-            <Label>Top k</Label>
-            <TextField
-              type="number"
-              min={1}
-              max={1000}
-              value={topK}
-              onChange={(e) => setTopK(Number(e.target.value))}
-              className="w-24 tabular-nums"
-            />
-          </label>
-          {kind !== "text" && (
-            <>
-              <Recall value={recall} onChange={setRecall} overridden={!!probe} />
-              <label className="grid gap-1.5">
-                <Label>Probe</Label>
-                <TextField
-                  type="number"
-                  min={1}
-                  placeholder="auto"
-                  value={probe}
-                  onChange={(e) => setProbe(e.target.value)}
-                  className="w-24 tabular-nums"
-                />
-              </label>
-            </>
-          )}
-          <span className="ml-auto text-xs text-faint">On {branch}</span>
         </div>
 
         {kind !== "text" && vectorFields}
@@ -362,15 +363,12 @@ export function QueryPlayground({ index, branch }: { index: IndexInfo; branch: s
             {error.message}
           </p>
         )}
-        <Button
-          variant="primary"
-          size="default"
-          leadingIcon={Play}
-          disabled={busy}
-          className="w-fit"
-        >
-          {kind === "vector" ? "Run query" : "Run search"}
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button variant="primary" size="default" leadingIcon={Play} disabled={busy}>
+            {kind === "vector" ? "Run query" : "Run search"}
+          </Button>
+          <span className="text-xs text-faint">on {branch}</span>
+        </div>
       </form>
 
       {hits && <Results hits={hits.hits} ms={hits.ms} kind={kind} attributes={include} />}
@@ -423,9 +421,7 @@ function Recall({
     <div className={cn("grid gap-1.5", overridden && "opacity-50")}>
       <div className="flex items-baseline gap-2">
         <Label>Recall</Label>
-        <span className="font-mono text-xs tabular-nums">
-          {shown === 1 ? "exact" : shown.toFixed(2)}
-        </span>
+        <span className="text-xs tabular-nums">{shown === 1 ? "exact" : shown.toFixed(2)}</span>
         {value === null ? (
           <span className="text-xs text-faint">default</span>
         ) : (
@@ -485,7 +481,7 @@ function Results({
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="h-9 border-b text-left font-mono text-micro tracking-wide text-faint uppercase">
+              <tr className="h-10 border-b text-left text-xs text-muted-foreground">
                 <th className="px-4 font-normal">Id</th>
                 <th className="px-4 text-right font-normal">
                   {kind === "vector" ? "Distance" : "Score"}
@@ -514,16 +510,16 @@ function Results({
                         !highlights.length && "border-b border-border/60 last:border-0",
                       )}
                     >
-                      <td className="px-4 font-mono">{String(hit.id)}</td>
-                      <td className="px-4 text-right font-mono tabular-nums">
+                      <td className="px-4">{String(hit.id)}</td>
+                      <td className="px-4 text-right tabular-nums">
                         {"distance" in hit ? hit.distance.toFixed(4) : hit.score.toFixed(4)}
                       </td>
                       {"ranks" in hit && (
                         <>
-                          <td className="px-4 text-right font-mono text-muted-foreground tabular-nums">
+                          <td className="px-4 text-right text-muted-foreground tabular-nums">
                             {hit.ranks.vector ?? "—"}
                           </td>
-                          <td className="px-4 text-right font-mono text-muted-foreground tabular-nums">
+                          <td className="px-4 text-right text-muted-foreground tabular-nums">
                             {hit.ranks.text ?? "—"}
                           </td>
                         </>
@@ -539,7 +535,7 @@ function Results({
                         <td colSpan={span} className="grid gap-1 px-4 pb-3">
                           {highlights.map(([name, h]) => (
                             <p key={name} className="text-muted-foreground">
-                              <span className="mr-2 font-mono text-xs text-faint">{name}</span>
+                              <span className="mr-2 text-xs text-faint">{name}</span>
                               <Marked highlight={h} />
                             </p>
                           ))}

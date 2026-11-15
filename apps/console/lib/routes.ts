@@ -8,7 +8,7 @@ export type Route =
   | { view: "home" }
   | { view: "settings" }
   | { view: "usage" }
-  | { view: "filesystems"; env: string }
+  | { view: "disks"; env: string }
   | { view: (typeof ENV_PAGES)[number]; env: string }
   | { view: "files" | "branches" | "history" | "search"; ns: string }
   | { view: "branch"; ns: string; branch: string }
@@ -20,7 +20,7 @@ export function parse(path: string): Route {
   if (!first) return { view: "home" };
   if ((first === "settings" || first === "usage") && !id) return { view: first };
   if (first === "e" && id && !rest.length) {
-    if (!page) return { view: "filesystems", env: id };
+    if (!page) return { view: "disks", env: id };
     const view = ENV_PAGES.find((p) => p === page);
     if (view) return { view, env: id };
   }

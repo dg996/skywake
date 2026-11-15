@@ -9,7 +9,7 @@ export type Env = { name: string };
 
 /**
  * Every environment, in name order. skywake-api keeps one row for each; a
- * filesystem made a moment ago may name one before its row arrives.
+ * disk made a moment ago may name one before its row arrives.
  */
 export function useEnvironments() {
   const [made, result] = useQuery(queries.environments());

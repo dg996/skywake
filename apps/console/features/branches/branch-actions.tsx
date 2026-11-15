@@ -32,7 +32,7 @@ export function ForkDialog({
         at ? (
           <>
             A new branch that starts at <span className="font-mono">{at.slice(0, 8)}</span>, as{" "}
-            <span className="font-mono">{from}</span> was then.
+            <span>{from}</span> was then.
           </>
         ) : (
           "A new branch with the same files. Nothing is copied."

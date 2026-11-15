@@ -70,7 +70,7 @@ function guard(event: BeforeUnloadEvent) {
   if (jobs.some(active)) event.preventDefault();
 }
 
-/** Queues files to upload to `branch`. Each path is the file's place in the filesystem. */
+/** Queues files to upload to `branch`. Each path is the file's place on the disk. */
 export function upload(
   ns: string,
   branch: string,

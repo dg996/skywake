@@ -109,7 +109,7 @@ const order = (a: Node, b: Node) => a.label.localeCompare(b.label, undefined, { 
 const leavesOf = (node: Node): Leaf[] =>
   node.kind === "leaf" ? [node] : node.children.flatMap(leavesOf);
 
-/** A filesystem's open work, as a tree of branches grouped by name. */
+/** A disk's open work, as a tree of branches grouped by name. */
 export function Branches({ ns }: { ns: string }) {
   const fleet = useFleet({ ns });
   const checks = useChecks(fleet.reviews, fleet.branches);
@@ -288,7 +288,7 @@ function GroupRow({ group, depth, ...props }: RowProps & { group: Group }) {
             open && "rotate-90",
           )}
         />
-        <span className="truncate font-mono text-sm">{group.label}/</span>
+        <span className="truncate text-sm">{group.label}/</span>
         <span className="shrink-0 text-xs text-faint">{plural(leaves.length, "branch")}</span>
         <span className="ml-auto flex shrink-0 items-center gap-4">
           <AnimatePresence initial={false}>
@@ -347,7 +347,7 @@ function LeafRow({ ns, leaf, depth, onFork }: RowProps & { leaf: Leaf }) {
       />
       <span className="flex min-w-0 items-center gap-2" style={indent(depth)}>
         <span className="w-3.5 shrink-0" />
-        <span className={cn("truncate font-mono text-sm", branch.protected && "font-medium")}>
+        <span className={cn("truncate text-sm", branch.protected && "font-medium")}>
           {leaf.label}
         </span>
       </span>

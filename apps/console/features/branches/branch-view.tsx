@@ -127,7 +127,7 @@ export function BranchView({ ns, branch }: { ns: string; branch: string }) {
           )}
           <div className="min-w-0">
             <div className="flex items-center gap-2.5">
-              <h1 className="truncate font-mono text-[22px] leading-7 font-semibold tracking-[-0.02em]">
+              <h1 className="truncate text-[22px] leading-7 font-semibold tracking-[-0.02em]">
                 {branch}
               </h1>
               <StatusPill status={status} />
@@ -139,7 +139,7 @@ export function BranchView({ ns, branch }: { ns: string; branch: string }) {
                   from
                   <Link
                     href={branchPath(ns, info.forkedFrom)}
-                    className="font-mono text-foreground hover:underline"
+                    className="text-foreground hover:underline"
                   >
                     {info.forkedFrom}
                   </Link>
@@ -167,7 +167,7 @@ export function BranchView({ ns, branch }: { ns: string; branch: string }) {
                   </span>
                   {holds.length > 0 && (
                     <span>
-                      · holds <span className="font-mono text-foreground">{holds.join(", ")}</span>
+                      · holds <span className="text-foreground">{holds.join(", ")}</span>
                     </span>
                   )}
                 </>
@@ -183,7 +183,7 @@ export function BranchView({ ns, branch }: { ns: string; branch: string }) {
                   </Button>
                 </MenuTrigger>
                 <MenuContent align="end" checkedIndex={tries.findIndex((t) => t.name === branch)}>
-                  <MenuLabel className="font-mono text-xs font-normal text-muted-foreground">
+                  <MenuLabel className="text-xs font-normal text-muted-foreground">
                     {folder}
                   </MenuLabel>
                   {tries.map((t, i) => (
@@ -417,7 +417,7 @@ function Timeline({
         <li className="flex gap-3 px-4 py-2 text-xs text-muted-foreground">
           <GitFork className="mt-0.5 size-[9px] shrink-0" />
           <span>
-            Forked from <span className="font-mono">{forkedFrom}</span> <Ago time={created} />
+            Forked from <span>{forkedFrom}</span> <Ago time={created} />
           </span>
         </li>
       )}
@@ -445,8 +445,8 @@ function WholeHeader({ review }: { review: Review }) {
     <div className="border-b px-5 py-4">
       <p className="text-base font-medium">All changes on this branch</p>
       <p className="mt-1 text-sm text-muted-foreground">
-        Against <span className="font-mono text-foreground">{review.into}</span> where it forked,
-        across {plural(review.commits.length, "commit")}.
+        Against <span className="text-foreground">{review.into}</span> where it forked, across{" "}
+        {plural(review.commits.length, "commit")}.
       </p>
     </div>
   );
@@ -493,7 +493,7 @@ function Changes({
             >
               {SIGN[change.kind]}
             </span>
-            <span className="truncate font-mono text-sm">{change.path}</span>
+            <span className="truncate text-sm">{change.path}</span>
           </button>
           <AnimatePresence initial={false}>
             {open === change.path && (
@@ -587,8 +587,8 @@ function ReviewBar({ review, check }: { review: Review; check: Check }) {
           <span className="block text-xs text-muted-foreground">
             {conflicts.length ? (
               <>
-                In <span className="font-mono text-destructive">{conflicts.join(", ")}</span>. Fork
-                a retry from {review.into}.
+                In <span className="text-destructive">{conflicts.join(", ")}</span>. Fork a retry
+                from {review.into}.
               </>
             ) : (
               <>

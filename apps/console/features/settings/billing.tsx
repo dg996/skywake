@@ -220,7 +220,7 @@ export function Billing() {
         )}
         {!paying && (
           <Limit
-            name="Filesystems"
+            name="Disks"
             used={billing.filesystems.count}
             limit={billing.filesystems.limit}
             unit=""
@@ -492,7 +492,7 @@ function InvoiceLines({ org, month }: { org: string; month: string }) {
           key={`${line.index}/${line.item}`}
           className="flex items-center gap-3.5 py-2.5 pr-4 pl-[66px] text-[13px]"
         >
-          <span className="w-48 truncate font-mono">{line.index}</span>
+          <span className="w-48 truncate">{line.index}</span>
           <span className="flex-1 truncate text-muted-foreground">
             {amount(line.quantity)} {UNITS[line.item] ?? line.item} at ${line.unit_price}
           </span>

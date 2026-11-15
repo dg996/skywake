@@ -71,7 +71,7 @@ type Card = {
   updated: number;
 };
 
-/** An environment's home: a card per filesystem, the ones that need you first. */
+/** An environment's home: a card per disk, the ones that need you first. */
 export function Namespaces({ env }: { env: string }) {
   const fleet = useFleet({ env });
   const checks = useChecks(fleet.reviews, fleet.branches);
@@ -146,7 +146,7 @@ export function Namespaces({ env }: { env: string }) {
     fleet.branches.every((branch) => branch.protected);
   const shown = cards.filter((card) => nameInEnv(card.name).includes(filter.trim()));
 
-  // `/` filters and `c` makes a new filesystem, as in Linear.
+  // `/` filters and `c` makes a new disk, as in Linear.
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
       if (event.metaKey || event.ctrlKey || event.altKey || creating) return;
@@ -167,7 +167,7 @@ export function Namespaces({ env }: { env: string }) {
   return (
     <Page
       eyebrow={env}
-      title="Filesystems"
+      title="Disks"
       description="Each one has its own branches and history. Agents fork it, work, and merge back."
       actions={
         <>
@@ -196,7 +196,7 @@ export function Namespaces({ env }: { env: string }) {
             size="default"
             onClick={() => setCreating(true)}
           >
-            New filesystem
+            New disk
           </Button>
         </>
       }
@@ -212,20 +212,20 @@ export function Namespaces({ env }: { env: string }) {
       ) : shown.length && view === "list" ? (
         <Glide className="-mx-4 min-w-0 divide-y divide-border/60">
           {shown.map((card) => (
-            <FilesystemRow key={card.name} card={card} />
+            <DiskRow key={card.name} card={card} />
           ))}
         </Glide>
       ) : shown.length ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {shown.map((card) => (
-            <FilesystemCard key={card.name} card={card} />
+            <DiskCard key={card.name} card={card} />
           ))}
         </div>
       ) : (
         <div className="-mx-5">
           <Empty
-            title={filter ? `No filesystem matches “${filter}”` : `No filesystems in ${env}`}
-            columns={["Filesystem", "Branches", "Updated"]}
+            title={filter ? `No disk matches “${filter}”` : `No disks in ${env}`}
+            columns={["Disk", "Branches", "Updated"]}
           >
             <p>
               {filter
@@ -239,7 +239,7 @@ export function Namespaces({ env }: { env: string }) {
                 className="mt-4"
                 onClick={() => setCreating(true)}
               >
-                New filesystem
+                New disk
               </Button>
             )}
           </Empty>
@@ -250,7 +250,7 @@ export function Namespaces({ env }: { env: string }) {
   );
 }
 
-function FilesystemCard({ card }: { card: Card }) {
+function DiskCard({ card }: { card: Card }) {
   const total = card.commits.reduce((a, b) => a + b, 0);
   const who = card.agents.length ? card.agents : card.last?.agent ? [card.last.agent] : [];
 
@@ -262,7 +262,7 @@ function FilesystemCard({ card }: { card: Card }) {
       <div className="flex items-start gap-3">
         <Orb name={card.name} className="size-9" />
         <div className="min-w-0 flex-1">
-          <div className="truncate font-mono text-[15px] font-medium">{nameInEnv(card.name)}</div>
+          <div className="truncate text-[15px] font-medium">{nameInEnv(card.name)}</div>
           <div className="truncate text-xs text-faint">
             {plural(card.branches, "open branch")} · {city(card.region)}
           </div>
@@ -295,7 +295,7 @@ function FilesystemCard({ card }: { card: Card }) {
   );
 }
 
-function FilesystemRow({ card }: { card: Card }) {
+function DiskRow({ card }: { card: Card }) {
   const total = card.commits.reduce((a, b) => a + b, 0);
   const counts = [
     [card.waiting, "to merge"],
@@ -306,7 +306,7 @@ function FilesystemRow({ card }: { card: Card }) {
   return (
     <Link href={nsPath(card.name)} data-glide className="group flex h-14 items-center gap-4 px-4">
       <Orb name={card.name} />
-      <span className="w-44 shrink-0 truncate font-mono text-sm font-medium max-sm:w-auto max-sm:flex-1">
+      <span className="w-44 shrink-0 truncate text-sm font-medium max-sm:w-auto max-sm:flex-1">
         {nameInEnv(card.name)}
       </span>
       <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground max-sm:hidden">
@@ -330,7 +330,9 @@ function FilesystemRow({ card }: { card: Card }) {
       <span title={plural(total, "commit")} className="max-md:hidden">
         <Spark values={card.commits} className="h-5 w-20" />
       </span>
-      <State card={card} />
+      <span className="flex w-32 shrink-0 justify-end">
+        <State card={card} />
+      </span>
       <Ago time={card.last?.at ?? card.updated} className="w-8 text-right" />
     </Link>
   );
@@ -353,7 +355,7 @@ function Figure({ label, value, alert }: { label: string; value: number; alert?:
   );
 }
 
-/** What the filesystem needs, in a word, with a dot so it never rests on colour alone. */
+/** What the disk needs, in a word, with a dot so it never rests on colour alone. */
 function State({ card }: { card: Card }) {
   if (card.conflicts)
     return (

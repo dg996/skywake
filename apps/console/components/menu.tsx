@@ -95,7 +95,6 @@ export function Prompt({
             defaultValue={initial}
             autoFocus
             onFocus={(event) => event.currentTarget.select()}
-            className="font-mono"
           />
           {error && <p className="-mt-2 text-sm text-destructive">{error}</p>}
           <DialogFooter>

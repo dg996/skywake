@@ -12,7 +12,7 @@ import { envOf } from "@/lib/names";
 import { apiPath } from "@/lib/paths";
 
 // Everything the console derives from Zero's rows for one environment or one
-// filesystem: reviews, agents, and what went wrong. Pages ask for a scope and
+// disk: reviews, agents, and what went wrong. Pages ask for a scope and
 // read what they need.
 
 export type Scope = { env: string } | { ns: string };
@@ -245,7 +245,7 @@ export function filesOf(commits: readonly Commit[]) {
 }
 
 /**
- * The branch a filesystem opens on: a protected one, else `main`, else one
+ * The branch a disk opens on: a protected one, else `main`, else one
  * that was not forked. Forks such as `agents/1` sort before `main`, so the
  * first in the list is not enough.
  */

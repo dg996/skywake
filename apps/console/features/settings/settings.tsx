@@ -38,7 +38,7 @@ export function SettingsPage() {
       narrow
       eyebrow={org?.name ?? "Organization"}
       title="Settings"
-      description="Who can reach your filesystems, and how."
+      description="Who can reach your disks, and how."
     >
       <div className="grid gap-12">
         <Members />
@@ -425,17 +425,13 @@ function Keys() {
           <Lines
             title={
               <>
-                <span className="font-mono text-[13px]">{key.name}</span>
+                <span className="text-[13px]">{key.name}</span>
                 <Tag>{ACCESS_NAMES[key.role] ?? key.role}</Tag>
               </>
             }
             detail={
               <>
-                {key.namespaces === "*" ? (
-                  "All filesystems"
-                ) : (
-                  <span className="font-mono">{key.namespaces}</span>
-                )}
+                {key.namespaces === "*" ? "All disks" : <span>{key.namespaces}</span>}
                 {[maker(key), expiry(key.expires, now), used(key.last_used)]
                   .filter(Boolean)
                   .map((part) => ` · ${part}`)
@@ -534,12 +530,8 @@ function NewKey({
         <Field label="Name">
           <Input name="name" placeholder="ci-agents" required autoFocus />
         </Field>
-        <Field label="Filesystems">
-          <Input
-            name="namespaces"
-            placeholder="All, or a pattern like prod/*"
-            className="font-mono"
-          />
+        <Field label="Disks">
+          <Input name="namespaces" placeholder="All, or a pattern like prod/*" />
         </Field>
         <Field label="Access">
           <Choice value={role} options={ACCESS} onChange={setRole} />

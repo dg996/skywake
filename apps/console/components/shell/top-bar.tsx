@@ -11,7 +11,7 @@ import {
 import { envOf, nameInEnv } from "@/lib/names";
 import { envPath, nsPath } from "@/lib/paths";
 import { useEnvironment, useNamespace } from "@/hooks/use-ns";
-import { Orb } from "@/components/kit";
+import { IndexMark, Orb } from "@/components/kit";
 
 const PAGES: Record<string, string> = {
   activity: "Activity",
@@ -35,19 +35,24 @@ export function TopBar() {
   else if (route.view === "index") {
     if (env) trail.push({ label: env, href: envPath(env) });
     trail.push({ label: "Indexes", href: env && envPath(env, "indexes") });
-    trail.push({ label: nameInEnv(route.index), mono: true });
+    trail.push({
+      label: nameInEnv(route.index),
+      lead: <IndexMark name={route.index} className="size-3.5" />,
+    });
   } else {
     if (env) trail.push({ label: env, href: envPath(env) });
     if (ns)
-      trail.push({
-        label: nameInEnv(ns),
-        href: nsPath(ns),
-        mono: true,
-        lead: <Orb name={ns} className="size-3.5" />,
-      });
-    if (branch) trail.push({ label: branch, mono: true });
+      trail.push(
+        { label: "Disks", href: env && envPath(env) },
+        {
+          label: nameInEnv(ns),
+          href: nsPath(ns),
+          lead: <Orb name={ns} className="size-3.5" />,
+        },
+      );
+    if (branch) trail.push({ label: branch });
     else if (page) trail.push({ label: page });
-    else if (!ns) trail.push({ label: "Filesystems" });
+    else if (!ns) trail.push({ label: "Disks" });
   }
   if (ns && env !== envOf(ns)) trail.shift();
 

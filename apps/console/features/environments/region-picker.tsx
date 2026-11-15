@@ -3,7 +3,7 @@
 import { cn } from "@skywake/ui/lib/utils";
 import { city, type Region } from "@/features/environments/regions";
 
-/** The region a new filesystem or index starts with: the server's default, else the first. */
+/** The region a new disk or index starts with: the server's default, else the first. */
 export function defaultRegion(regions: Region[]) {
   return (regions.find((r) => r.default) ?? regions[0])?.name;
 }
@@ -40,7 +40,7 @@ export function RegionPicker({
             )}
           />
           <span className="min-w-0 flex-1 truncate">{city(r.name)}</span>
-          <span className="truncate font-mono text-xs text-muted-foreground">{r.name}</span>
+          <span className="truncate text-xs text-muted-foreground">{r.name}</span>
         </button>
       ))}
     </div>

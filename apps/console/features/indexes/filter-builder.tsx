@@ -62,7 +62,7 @@ export function FilterBuilder({
                 const next = attributes.find((a) => a.name === e.target.value)?.type ?? "string";
                 set(i, { attribute: e.target.value, op: OPS[next][0]! });
               }}
-              className="w-40 font-mono"
+              className="w-40"
             >
               {attributes.map((a) => (
                 <option key={a.name}>{a.name}</option>
@@ -90,7 +90,7 @@ export function FilterBuilder({
               }
               value={row.value}
               onChange={(e) => set(i, { value: e.target.value })}
-              className="flex-1 font-mono"
+              className="flex-1"
             />
             <button
               type="button"

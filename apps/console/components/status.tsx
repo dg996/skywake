@@ -13,40 +13,40 @@ export type Status =
   | "protected";
 
 const LOOK: Record<Status, { label: string; className: string; icon?: React.ReactNode }> = {
-  live: { label: "live", className: "text-foreground" },
+  live: { label: "Live", className: "text-foreground" },
   ready: {
-    label: "ready",
+    label: "Ready",
     className: "text-foreground",
     icon: <Check className="size-3" />,
   },
   conflict: {
-    label: "conflict",
-    className: "border-destructive/30 bg-destructive/5 text-destructive",
+    label: "Conflict",
+    className: "bg-destructive/10 text-destructive",
     icon: <X className="size-3" />,
   },
   checking: {
-    label: "checking",
+    label: "Checking",
     className: "text-muted-foreground",
     icon: <Loader2 className="size-3 animate-spin" />,
   },
   merged: {
-    label: "merged",
+    label: "Merged",
     className: "text-green",
     icon: <GitMerge className="size-3" />,
   },
   rejected: {
-    label: "rejected",
+    label: "Rejected",
     className: "text-destructive",
     icon: <X className="size-3" />,
   },
-  ended: { label: "ended", className: "text-muted-foreground" },
+  ended: { label: "Ended", className: "text-muted-foreground" },
   idle: {
-    label: "idle",
+    label: "Idle",
     className: "text-muted-foreground",
     icon: <CircleDashed className="size-3" />,
   },
   protected: {
-    label: "protected",
+    label: "Protected",
     className: "text-muted-foreground",
     icon: <Lock className="size-3" />,
   },
@@ -58,7 +58,7 @@ export function StatusPill({ status, className }: { status: Status; className?: 
   return (
     <span
       className={cn(
-        "inline-flex h-5 shrink-0 items-center gap-1 rounded-sm border bg-background px-1.5 text-xs font-medium",
+        "inline-flex h-5 shrink-0 items-center gap-1 rounded-full bg-foreground/[0.06] px-2 text-xs font-medium",
         look.className,
         className,
       )}

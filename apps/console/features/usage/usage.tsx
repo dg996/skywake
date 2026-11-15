@@ -73,8 +73,8 @@ export function Usage() {
           note="last 14 days"
           trend={days.map((d) => d.merges)}
         />
-        <Stat label="Branches" value={branches.length} note="across every filesystem" />
-        <Stat label="Filesystems" value={namespaces.length} note="in every environment" />
+        <Stat label="Branches" value={branches.length} note="across every disk" />
+        <Stat label="Disks" value={namespaces.length} note="in every environment" />
       </Stats>
 
       <Panel
@@ -138,12 +138,12 @@ export function Usage() {
         </div>
       </Panel>
 
-      <Panel title="By filesystem" count={perNamespace.length}>
+      <Panel title="By disk" count={perNamespace.length}>
         <Glide>
           <table className="w-full text-sm">
             <thead className="text-left text-xs text-muted-foreground">
               <tr className="border-b">
-                <th className="px-4 py-2.5 font-normal">Filesystem</th>
+                <th className="px-4 py-2.5 font-normal">Disk</th>
                 <th className="py-2.5 font-normal max-md:hidden">Share of commits</th>
                 <th className="py-2.5 text-right font-normal">Branches</th>
                 <th className="py-2.5 text-right font-normal">Commits</th>
@@ -157,7 +157,7 @@ export function Usage() {
                   <tr key={row.name} data-glide className="border-b border-line/60 last:border-0">
                     <td className="flex items-center gap-2.5 px-4 py-3">
                       <Orb name={row.name} className="size-4" />
-                      <span className="font-mono font-medium">{nameInEnv(row.name)}</span>
+                      <span className="font-medium">{nameInEnv(row.name)}</span>
                       <span className="ml-2 text-xs text-faint">{envOf(row.name)}</span>
                     </td>
                     <td className="w-1/3 py-3 pr-6 max-md:hidden">

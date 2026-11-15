@@ -21,7 +21,7 @@ import { mutators } from "@/zero/mutators";
 import { Button, Field, Input } from "@/components/kit";
 import { navigate } from "@/components/shell/router";
 
-/** Makes a filesystem (a namespace) in an environment and a region, then opens it. */
+/** Makes a disk (a namespace) in an environment and a region, then opens it. */
 export function NewNamespace({
   env,
   open,
@@ -70,7 +70,7 @@ export function NewNamespace({
     <Dialog open={open} onOpenChange={close}>
       <DialogContent className="sm:max-w-[440px]" showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle className="text-base">New filesystem in {env}</DialogTitle>
+          <DialogTitle className="text-base">New disk in {env}</DialogTitle>
           <DialogDescription className="text-sm">
             Its own branches and history. Agents fork it and merge back.
           </DialogDescription>
@@ -82,7 +82,6 @@ export function NewNamespace({
               onChange={(event) => (setRepo(event.target.value), setError(""))}
               placeholder="app"
               autoFocus
-              className="font-mono"
             />
           </Field>
           <div className="grid gap-1.5">

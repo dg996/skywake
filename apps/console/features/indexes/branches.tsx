@@ -57,7 +57,7 @@ export function Branches({
               <div key={branch.name} data-glide className="group flex h-12 items-center gap-4 px-4">
                 <button
                   type="button"
-                  className="min-w-0 flex-1 truncate text-left font-mono text-sm"
+                  className="min-w-0 flex-1 truncate text-left text-sm"
                   onClick={() => {
                     onPick(branch.name);
                     navigate(indexPath(index, "query"));
@@ -65,19 +65,25 @@ export function Branches({
                 >
                   {branch.name}
                 </button>
-                <span className="text-xs text-faint max-sm:hidden">
-                  {branch.forked_from ? `from ${branch.forked_from}` : "first branch"}
-                </span>
+                {branch.forked_from && (
+                  <span className="text-xs text-faint max-sm:hidden">
+                    from <span>{branch.forked_from}</span>
+                  </span>
+                )}
                 <Ago time={Date.parse(branch.created)} className="w-8 text-right" />
-                <Button leadingIcon={GitFork} onClick={() => setForking(branch.name)}>
-                  Fork
-                </Button>
-                <Button
-                  aria-label={`Delete ${branch.name}`}
-                  leadingIcon={Trash2}
-                  disabled={branch.name === "main"}
-                  onClick={() => setDeleting(branch.name)}
-                />
+                {/* Actions show on the row you are on, so the list stays quiet. */}
+                <div className="flex items-center gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 max-sm:opacity-100">
+                  <Button leadingIcon={GitFork} onClick={() => setForking(branch.name)}>
+                    Fork
+                  </Button>
+                  {branch.name !== "main" && (
+                    <Button
+                      aria-label={`Delete ${branch.name}`}
+                      leadingIcon={Trash2}
+                      onClick={() => setDeleting(branch.name)}
+                    />
+                  )}
+                </div>
               </div>
             ))}
           </Glide>

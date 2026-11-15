@@ -23,13 +23,13 @@ import { Orb } from "@/components/kit";
 
 // ⌘K opens it. `g` then a letter jumps straight to a page, as in Linear.
 const PAGES = [
-  { key: "f", label: "Filesystems", page: undefined, icon: HardDrive },
+  { key: "d", label: "Disks", page: undefined, icon: HardDrive },
   { key: "y", label: "Activity", page: "activity", icon: Activity },
 ] as const;
 
-/** A filesystem's orb, in the shape the menu takes icons. */
+/** A disk's orb, in the shape the menu takes icons. */
 function orbIcon(name: string) {
-  return function FilesystemOrb({ className }: IconComponentProps) {
+  return function DiskOrb({ className }: IconComponentProps) {
     return <Orb name={name} className={className ?? "size-4"} />;
   };
 }
@@ -115,7 +115,7 @@ export function CommandMenu() {
         label: nameInEnv(n.name),
         description: envOf(n.name),
         icon: orbIcon(n.name),
-        group: "Filesystems",
+        group: "Disks",
         onSelect: () => navigate(nsPath(n.name)),
       })),
       ...envs.map((e) => ({
@@ -140,10 +140,10 @@ export function CommandMenu() {
       open={open}
       onOpenChange={setOpen}
       title="Jump to"
-      description="Search pages, environments, filesystems and branches"
+      description="Search pages, environments, disks and branches"
     >
       <Menu items={items} className="max-h-[440px]">
-        <CommandMenuInput placeholder="Jump to a page, filesystem or branch…" />
+        <CommandMenuInput placeholder="Jump to a page, disk or branch…" />
         <CommandMenuList>
           <CommandMenuEmpty>Nothing matches.</CommandMenuEmpty>
         </CommandMenuList>
