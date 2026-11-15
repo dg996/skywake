@@ -10,7 +10,7 @@ use crate::ops::files;
 use crate::retry::{SAVE_ATTEMPTS, backoff};
 use crate::store::gc::lock;
 use crate::store::objects::{chunk_path, commit_path};
-use crate::{Change, Chunk, Commit, Data, Entry, Error, Hash, Repo, Result, Tree, Trees};
+use crate::{Change, Chunk, Commit, Data, Entry, Error, Hash, Objects, Repo, Result, Tree, Trees};
 
 const WHOLE_MAX: u64 = 1 << 20;
 
@@ -36,10 +36,26 @@ enum Step {
 
 impl Repo {
     pub async fn tree_at(&self, branch: &str, at: Option<Hash>) -> Result<(Hash, Trees)> {
-        match at {
-            Some(at) => self.commit_tree(at).await,
-            None => self.head_tree(branch).await,
+        let (commit, stored) = match at {
+            Some(at) => (at, None),
+            None => {
+                let commit = self.head(branch).await?.commit;
+                (Objects::address(&commit)?, Some(commit))
+            }
+        };
+        if let Some(view) = self.views.get(commit) {
+            return Ok(view);
         }
+        let stored = match stored {
+            Some(stored) => stored,
+            None => self.objects.get_commit(commit).await?,
+        };
+        let view = (
+            stored.tree,
+            Trees::new(self.objects.clone(), &stored.packs)?,
+        );
+        self.views.keep(commit, view.clone());
+        Ok(view)
     }
 
     pub async fn list(
@@ -96,7 +112,7 @@ impl Repo {
             return Err(Error::NotFound(path.to_string()));
         };
         if offset == 0 && len >= size && size <= WHOLE_MAX {
-            return self.contents().whole(&data).await;
+            return Ok(self.contents().whole(&data).await?.to_vec());
         }
         files::read(self.objects(), &data, offset, len).await
     }

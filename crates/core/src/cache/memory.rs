@@ -4,6 +4,8 @@ use std::sync::{Arc, Mutex};
 use crate::Hash;
 use crate::sync::lock;
 
+type Key = (Hash, Hash);
+
 pub struct Memory {
     max_bytes: u64,
     held: Mutex<Held>,
@@ -12,8 +14,8 @@ pub struct Memory {
 #[derive(Default)]
 struct Held {
     bytes: u64,
-    data: HashMap<Hash, Arc<[u8]>>,
-    order: VecDeque<Hash>,
+    data: HashMap<Key, Arc<[u8]>>,
+    order: VecDeque<Key>,
 }
 
 impl Memory {
@@ -24,17 +26,17 @@ impl Memory {
         }
     }
 
-    pub fn get(&self, hash: Hash) -> Option<Arc<[u8]>> {
-        lock(&self.held).data.get(&hash).cloned()
+    fn get(&self, key: Key) -> Option<Arc<[u8]>> {
+        lock(&self.held).data.get(&key).cloned()
     }
 
-    pub fn insert(&self, hash: Hash, data: &[u8]) {
+    fn insert(&self, key: Key, data: Arc<[u8]>) {
         let size = data.len() as u64;
         if size > self.max_bytes / 8 {
             return;
         }
         let mut held = lock(&self.held);
-        if held.data.contains_key(&hash) {
+        if held.data.contains_key(&key) {
             return;
         }
         while held.bytes + size > self.max_bytes {
@@ -46,8 +48,8 @@ impl Memory {
             }
         }
         held.bytes += size;
-        held.data.insert(hash, Arc::from(data));
-        held.order.push_back(hash);
+        held.data.insert(key, data);
+        held.order.push_back(key);
     }
 
     pub fn bytes(&self) -> u64 {
@@ -68,18 +70,11 @@ impl Scoped {
     }
 
     pub fn get(&self, hash: Hash) -> Option<Arc<[u8]>> {
-        self.memory.get(self.key(hash))
+        self.memory.get((self.scope, hash))
     }
 
-    pub fn insert(&self, hash: Hash, data: &[u8]) {
-        self.memory.insert(self.key(hash), data);
-    }
-
-    fn key(&self, hash: Hash) -> Hash {
-        let mut both = [0; 64];
-        both[..32].copy_from_slice(self.scope.as_bytes());
-        both[32..].copy_from_slice(hash.as_bytes());
-        Hash::of(&both)
+    pub fn insert(&self, hash: Hash, data: Arc<[u8]>) {
+        self.memory.insert((self.scope, hash), data);
     }
 }
 
@@ -91,13 +86,17 @@ mod tests {
         Hash::of(&[n])
     }
 
+    fn scoped(max_bytes: u64) -> Scoped {
+        Scoped::new(Arc::new(Memory::new(max_bytes)), "ours")
+    }
+
     #[test]
     fn keeps_within_its_budget_dropping_the_oldest() {
-        let memory = Memory::new(64);
+        let memory = scoped(64);
         for n in 0..10 {
-            memory.insert(hash(n), &[n; 8]);
+            memory.insert(hash(n), Arc::from([n; 8]));
         }
-        assert_eq!(memory.bytes(), 64);
+        assert_eq!(memory.memory.bytes(), 64);
         assert!(memory.get(hash(0)).is_none());
         assert_eq!(memory.get(hash(9)).as_deref(), Some(&[9; 8][..]));
     }
@@ -107,15 +106,15 @@ mod tests {
         let memory = Arc::new(Memory::new(1024));
         let ours = Scoped::new(memory.clone(), "ours");
         let theirs = Scoped::new(memory, "theirs");
-        ours.insert(hash(1), b"secret");
+        ours.insert(hash(1), Arc::from(&b"secret"[..]));
         assert_eq!(ours.get(hash(1)).as_deref(), Some(&b"secret"[..]));
         assert!(theirs.get(hash(1)).is_none());
     }
 
     #[test]
     fn skips_what_would_crowd_out_everything_else() {
-        let memory = Memory::new(64);
-        memory.insert(hash(1), &[1; 9]);
+        let memory = scoped(64);
+        memory.insert(hash(1), Arc::from([1; 9]));
         assert!(memory.get(hash(1)).is_none());
     }
 }

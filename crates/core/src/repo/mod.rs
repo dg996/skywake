@@ -27,6 +27,7 @@ mod grep;
 mod history;
 mod merge;
 mod save;
+mod views;
 
 pub use contents::Chunks;
 pub use files::{Content, Edit};
@@ -41,6 +42,7 @@ pub struct Repo {
     refs: Refs,
     chunks: Option<Chunks>,
     memory: Option<Scoped>,
+    views: Arc<views::Views>,
 }
 
 impl Repo {
@@ -50,6 +52,7 @@ impl Repo {
             refs: Refs::new(store),
             chunks: None,
             memory: None,
+            views: Arc::default(),
         }
     }
 
@@ -202,7 +205,7 @@ impl Repo {
         self.refs.list().await
     }
 
-    async fn head(&self, branch: &str) -> Result<Head> {
+    pub(super) async fn head(&self, branch: &str) -> Result<Head> {
         self.refs
             .head(branch)
             .await?

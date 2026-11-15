@@ -187,23 +187,29 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
     let objects = Arc::new(Memory::new(256 << 20));
     let contents = Arc::new(Memory::new(1 << 30));
-    for (round, cached) in [
-        ("no cache", false),
-        ("memory, cold", true),
-        ("memory, warm", true),
+    let head = Repo::new(slow.clone()).head_commit("main").await?;
+    slow.take();
+    let warm = Repo::new(slow.clone()).with_memory(
+        Scoped::new(objects.clone(), "bench"),
+        Scoped::new(contents.clone(), "bench"),
+    );
+    for (round, cached, at) in [
+        ("no cache", false, None),
+        ("memory, cold", true, None),
+        ("memory, warm", true, None),
+        ("memory, warm, pinned commit", true, Some(head)),
+        ("memory, warm, pinned commit", true, Some(head)),
     ] {
-        let mut repo = Repo::new(slow.clone());
-        if cached {
-            repo = repo.with_memory(
-                Scoped::new(objects.clone(), "bench"),
-                Scoped::new(contents.clone(), "bench"),
-            );
-        }
+        let repo = if cached {
+            warm.clone()
+        } else {
+            Repo::new(slow.clone())
+        };
         println!("-- {round}, {} ms per request", latency.as_millis());
         let found = timed(
             "find *.rs",
             &slow,
-            repo.find("main", None, "", "*.rs", Wanted::Files, 1_000_000),
+            repo.find("main", at, "", "*.rs", Wanted::Files, 1_000_000),
         )
         .await?;
         assert_eq!(found.len(), files);
@@ -215,7 +221,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let matched = timed(
             "grep, 20 candidates (indexed)",
             &slow,
-            repo.grep("main", None, NEEDLE, &only),
+            repo.grep("main", at, NEEDLE, &only),
         )
         .await?;
         assert_eq!(matched.len(), HITS);
@@ -226,7 +232,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let matched = timed(
             "grep, every file (scan)",
             &slow,
-            repo.grep("main", None, NEEDLE, &all),
+            repo.grep("main", at, NEEDLE, &all),
         )
         .await?;
         assert_eq!(matched.len(), HITS);

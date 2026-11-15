@@ -182,20 +182,20 @@ impl Objects {
     }
 
     pub async fn get_raw(&self, hash: Hash) -> Result<Vec<u8>> {
-        self.raw_at(object_path(hash), hash).await
+        Ok(self.raw_at(object_path(hash), hash).await?.to_vec())
     }
 
     async fn get_at<T: DeserializeOwned>(&self, path: Path, hash: Hash) -> Result<T> {
         Ok(postcard::from_bytes(&self.raw_at(path, hash).await?)?)
     }
 
-    async fn raw_at(&self, path: Path, hash: Hash) -> Result<Vec<u8>> {
+    async fn raw_at(&self, path: Path, hash: Hash) -> Result<Arc<[u8]>> {
         if let Some(raw) = self.memory.as_ref().and_then(|memory| memory.get(hash)) {
-            return Ok(raw.to_vec());
+            return Ok(raw);
         }
-        let raw = self.raw_stored(path, hash).await?;
+        let raw: Arc<[u8]> = self.raw_stored(path, hash).await?.into();
         if let Some(memory) = &self.memory {
-            memory.insert(hash, &raw);
+            memory.insert(hash, raw.clone());
         }
         Ok(raw)
     }
