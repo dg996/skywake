@@ -34,15 +34,21 @@ export function retryingFetch(
     let mayHaveLanded = false;
     for (let attempt = 0; ; attempt++) {
       const last = attempt >= retries;
-      const timeout = new AbortController();
+      // fetch follows a signal only through weak references, so a signal from
+      // AbortSignal.any, or one given to a Request made just for the call,
+      // can be garbage collected and the timeout lost. The timer and the
+      // listener keep this controller alive, and fetch gets its signal directly.
+      const controller = new AbortController();
       const timer = setTimeout(
-        () => timeout.abort(new DOMException("no answer in time", "TimeoutError")),
+        () => controller.abort(new DOMException("no answer in time", "TimeoutError")),
         timeoutMs,
       );
-      const signal = AbortSignal.any([request.signal, timeout.signal]);
+      const cancel = () => controller.abort(request.signal.reason);
+      if (request.signal.aborted) cancel();
+      else request.signal.addEventListener("abort", cancel, { once: true });
       let response: Response;
       try {
-        response = await send(new Request(request.clone(), { signal }));
+        response = await send(request.clone(), { signal: controller.signal });
       } catch (error) {
         if (last || !idempotent || request.signal.aborted) throw error;
         mayHaveLanded = true;
@@ -50,6 +56,7 @@ export function retryingFetch(
         continue;
       } finally {
         clearTimeout(timer);
+        request.signal.removeEventListener("abort", cancel);
       }
       if (mayHaveLanded && request.method === "DELETE" && response.status === 404) {
         await response.body?.cancel();
