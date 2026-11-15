@@ -57,18 +57,22 @@ struct Marker {
 /// Marks the folder as `kind`. Already marked so, nothing changes; marked as
 /// the other kind, it fails.
 pub async fn mark(store: &dyn ObjectStore, kind: Kind) -> Result<()> {
-    let bytes = serde_json::to_vec(&Marker { kind, format: FORMAT }).expect("a marker is plain data");
+    let bytes = serde_json::to_vec(&Marker {
+        kind,
+        format: FORMAT,
+    })
+    .expect("a marker is plain data");
     match store
         .put_opts(&Path::from(MARKER), bytes.into(), PutMode::Create.into())
         .await
     {
         Ok(_) => Ok(()),
-        Err(object_store::Error::AlreadyExists { .. } | object_store::Error::Precondition { .. }) => {
-            match read(store).await? {
-                Some(found) if found != kind => Err(wrong(kind, found)),
-                _ => Ok(()),
-            }
-        }
+        Err(
+            object_store::Error::AlreadyExists { .. } | object_store::Error::Precondition { .. },
+        ) => match read(store).await? {
+            Some(found) if found != kind => Err(wrong(kind, found)),
+            _ => Ok(()),
+        },
         Err(error) => Err(error.into()),
     }
 }
@@ -103,7 +107,9 @@ async fn read(store: &dyn ObjectStore) -> Result<Option<Kind>> {
 
 async fn holds_any(store: &dyn ObjectStore, kind: Kind) -> Result<bool> {
     for folder in kind.own() {
-        let listed = store.list_with_delimiter(Some(&Path::from(*folder))).await?;
+        let listed = store
+            .list_with_delimiter(Some(&Path::from(*folder)))
+            .await?;
         if !listed.objects.is_empty() || !listed.common_prefixes.is_empty() {
             return Ok(true);
         }

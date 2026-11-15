@@ -204,6 +204,7 @@ export interface EngineOpenOptions {
   heads?: Maybe<boolean>;
   /** Keys for an `s3://` bucket the process has no credentials for. */
   keys?: Maybe<StoreKeys>;
+  cacheFolder?: Maybe<string>;
 }
 
 /** Keys for a bucket the process has no credentials for, such as a customer's. Stores opened with the same `id` share them. */

@@ -109,7 +109,11 @@ export class Stores {
     const keys = this.keysOf(region);
     this.#opened.set(folder, region);
     return this.#reuse(this.#engines, folder, () =>
-      Engine.open(this.location(region, folder), { heads, keys }),
+      Engine.open(this.location(region, folder), {
+        heads,
+        keys,
+        cacheFolder: region === this.defaultRegion ? folder : undefined,
+      }),
     );
   }
 

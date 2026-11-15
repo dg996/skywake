@@ -1,5 +1,4 @@
 use futures::future::try_join_all;
-use futures::{StreamExt, TryStreamExt, stream};
 use regex::{Regex, RegexBuilder};
 
 use super::find::join;
@@ -9,6 +8,7 @@ use crate::{Data, Entry, Error, Hash, Repo, Result, Trees};
 
 const FILE_MAX: u64 = 1 << 20;
 const PARALLELISM: usize = 16;
+const BATCH: usize = 2_048;
 const LINE_MAX: usize = 500;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -68,6 +68,7 @@ impl Repo {
         let pattern = RegexBuilder::new(pattern)
             .size_limit(1 << 20)
             .case_insensitive(options.ignore_case)
+            .multi_line(true)
             .build()
             .map_err(|error| Error::BadPattern(error.to_string()))?;
         let scope = Scope::new(options)?;
@@ -85,39 +86,56 @@ impl Repo {
         pattern: &Regex,
         limit: usize,
     ) -> Result<Vec<Match>> {
-        let objects = self.objects();
-        let texts = candidates
+        let contents = self.contents();
+        let texts: Vec<(String, Data)> = candidates
             .into_iter()
             .filter_map(|(path, entry)| match entry {
-                Entry::File { size, data, .. } if size <= FILE_MAX => Some((path, data, size)),
+                Entry::File { size, data, .. } if size <= FILE_MAX => Some((path, data)),
                 _ => None,
-            });
-        let mut reads = stream::iter(texts)
-            .map(|(path, data, size): (String, Data, u64)| async move {
-                Ok::<_, Error>((path, files::read(objects, &data, 0, size).await?))
             })
-            .buffered(PARALLELISM);
+            .collect();
         let mut found = Vec::new();
-        while let Some((path, bytes)) = reads.try_next().await? {
-            if bytes.contains(&0) {
-                continue;
-            }
-            for (number, line) in String::from_utf8_lossy(&bytes).lines().enumerate() {
-                if !pattern.is_match(line) {
-                    continue;
-                }
-                found.push(Match {
-                    path: path.clone(),
-                    line: number + 1,
-                    text: line.chars().take(LINE_MAX).collect(),
-                });
-                if found.len() == limit {
-                    return Ok(found);
-                }
+        for batch in texts.chunks(BATCH) {
+            let loaded = contents.load(batch.to_vec()).await?;
+            let pattern = pattern.clone();
+            let wanted = limit - found.len();
+            let matched = tokio::task::spawn_blocking(move || scan(&loaded, &pattern, wanted))
+                .await
+                .map_err(|error| Error::Io(std::io::Error::other(error)))?;
+            found.extend(matched);
+            if found.len() >= limit {
+                break;
             }
         }
         Ok(found)
     }
+}
+
+fn scan(files: &[(String, Vec<u8>)], pattern: &Regex, limit: usize) -> Vec<Match> {
+    let mut found = Vec::new();
+    for (path, bytes) in files {
+        if bytes.contains(&0) {
+            continue;
+        }
+        let text = String::from_utf8_lossy(bytes);
+        if !pattern.is_match(&text) {
+            continue;
+        }
+        for (number, line) in text.lines().enumerate() {
+            if !pattern.is_match(line) {
+                continue;
+            }
+            found.push(Match {
+                path: path.clone(),
+                line: number + 1,
+                text: line.chars().take(LINE_MAX).collect(),
+            });
+            if found.len() == limit {
+                return found;
+            }
+        }
+    }
+    found
 }
 
 async fn everything(trees: &Trees, root: Hash, scope: &Scope) -> Result<Vec<(String, Entry)>> {

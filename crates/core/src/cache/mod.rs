@@ -18,11 +18,13 @@ use crate::sync::lock;
 use crate::{Bundled, Hash, Objects};
 
 mod log;
+mod memory;
 mod nodes;
 pub mod slices;
 
 pub use crate::cluster::{Listing, Members};
 pub use log::{LogError, LogRecord, Sealed, Trimmed, WriteLog, ZONE};
+pub use memory::{Memory, Scoped};
 pub use nodes::{BATCH_FILES_MAX, BATCH_MAX, CacheNodes, HOT, Shared};
 
 pub struct ChunkCache {

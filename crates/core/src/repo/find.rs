@@ -49,22 +49,22 @@ impl Repo {
             None => return Ok(Vec::new()),
         };
         let mut found = Vec::new();
-        let mut todo = vec![(start, tree)];
-        while let Some((prefix, tree)) = todo.pop() {
-            for (name, entry) in trees.get(tree).await?.iter() {
-                let path = join(&prefix, name);
-                let (kind, size) = describe(entry);
-                if let Entry::Dir { tree } = entry {
-                    todo.push((path.clone(), *tree));
-                }
-                if wanted.keeps(kind) && glob.matches(&path) {
-                    found.push(Found { path, kind, size });
+        let mut level = vec![(start, tree)];
+        while !level.is_empty() && found.len() <= limit {
+            let mut next = Vec::new();
+            for (prefix, tree) in files::load_level(&trees, level).await? {
+                for (name, entry) in tree.iter() {
+                    let path = join(&prefix, name);
+                    let (kind, size) = describe(entry);
+                    if let Entry::Dir { tree } = entry {
+                        next.push((path.clone(), *tree));
+                    }
+                    if wanted.keeps(kind) && glob.matches(&path) {
+                        found.push(Found { path, kind, size });
+                    }
                 }
             }
-            todo.sort_by(|a, b| b.0.cmp(&a.0));
-            if found.len() > limit {
-                break;
-            }
+            level = next;
         }
         found.sort_by(|a, b| a.path.cmp(&b.path));
         found.truncate(limit);

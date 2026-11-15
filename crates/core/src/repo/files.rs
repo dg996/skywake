@@ -12,6 +12,8 @@ use crate::store::gc::lock;
 use crate::store::objects::{chunk_path, commit_path};
 use crate::{Change, Chunk, Commit, Data, Entry, Error, Hash, Repo, Result, Tree, Trees};
 
+const WHOLE_MAX: u64 = 1 << 20;
+
 pub struct Edit {
     pub path: String,
     pub content: Content,
@@ -90,9 +92,12 @@ impl Repo {
         len: u64,
     ) -> Result<Vec<u8>> {
         let (root, trees) = self.tree_at(branch, at).await?;
-        let Some(Entry::File { data, .. }) = files::find(&trees, root, path).await? else {
+        let Some(Entry::File { data, size, .. }) = files::find(&trees, root, path).await? else {
             return Err(Error::NotFound(path.to_string()));
         };
+        if offset == 0 && len >= size && size <= WHOLE_MAX {
+            return self.contents().whole(&data).await;
+        }
         files::read(self.objects(), &data, offset, len).await
     }
 

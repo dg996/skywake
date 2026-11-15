@@ -2,7 +2,7 @@
 
 mod export;
 mod history;
-mod open;
+pub(crate) mod open;
 
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;

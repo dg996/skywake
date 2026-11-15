@@ -7,6 +7,7 @@ use std::time::Duration;
 use futures::try_join;
 use object_store::ObjectStore;
 
+use crate::cache::Scoped;
 use crate::error::missing;
 use crate::model::Packs;
 use crate::ops::diff::{self, Change};
@@ -18,6 +19,7 @@ use crate::store::kind::{self, Kind};
 use crate::store::objects::commit_path;
 use crate::{Commit, Error, Hash, Head, Objects, Refs, Result, Tree, Trees};
 
+mod contents;
 mod files;
 mod find;
 mod glob;
@@ -26,6 +28,7 @@ mod history;
 mod merge;
 mod save;
 
+pub use contents::Chunks;
 pub use files::{Content, Edit};
 pub use find::{Found, Wanted};
 pub use glob::Glob;
@@ -36,6 +39,8 @@ pub use merge::{Merged, Resolution, Take};
 pub struct Repo {
     objects: Objects,
     refs: Refs,
+    chunks: Option<Chunks>,
+    memory: Option<Scoped>,
 }
 
 impl Repo {
@@ -43,6 +48,8 @@ impl Repo {
         Self {
             objects: Objects::new(store.clone()),
             refs: Refs::new(store),
+            chunks: None,
+            memory: None,
         }
     }
 
@@ -54,6 +61,21 @@ impl Repo {
 
     pub fn refs(&self) -> &Refs {
         &self.refs
+    }
+
+    pub fn with_memory(mut self, objects: Scoped, contents: Scoped) -> Self {
+        self.objects = self.objects.with_memory(objects);
+        self.memory = Some(contents);
+        self
+    }
+
+    fn contents(&self) -> contents::Contents<'_> {
+        contents::Contents::new(&self.objects, self.chunks.as_ref(), self.memory.as_ref())
+    }
+
+    pub fn with_chunks(mut self, chunks: Chunks) -> Self {
+        self.chunks = Some(chunks);
+        self
     }
 
     pub fn with_cache(mut self, dir: PathBuf) -> Self {

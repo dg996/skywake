@@ -2,6 +2,7 @@
 
 mod commits;
 mod files;
+mod warm;
 
 use std::sync::Arc;
 
@@ -32,6 +33,7 @@ pub struct Stored {
 pub struct EngineOpenOptions {
     pub heads: Option<bool>,
     pub keys: Option<crate::StoreKeys>,
+    pub cache_folder: Option<String>,
 }
 
 fn head_nodes(location: &str) -> Result<HeadNodes> {
@@ -65,9 +67,15 @@ impl Engine {
         let keys = keys.map(skywake_core::StoreKeys::from);
         let store = skywake_core::open_store_keyed(&location, None, keys.as_ref()).map_err(fail)?;
         let mut repo = Repo::new(store);
-        if options.and_then(|options| options.heads).unwrap_or(false) {
+        if options
+            .as_ref()
+            .and_then(|options| options.heads)
+            .unwrap_or(false)
+        {
             repo = repo.with_head_nodes(Arc::new(head_nodes(&location)?));
         }
+        let folder = options.and_then(|options| options.cache_folder);
+        let repo = warm::warmed(repo, &location, folder)?;
         Ok(Self { repo })
     }
 

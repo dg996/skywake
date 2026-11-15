@@ -15,6 +15,7 @@ use serde::de::DeserializeOwned;
 use super::bundles::{MOVES_MAX, Moved, moved_path};
 use super::held;
 use super::io::found;
+use crate::cache::Scoped;
 use crate::retry::backoff;
 use crate::sync::lock;
 use crate::{Bundled, Commit, Error, Hash, Result};
@@ -32,6 +33,7 @@ const OWNER_WAIT: std::time::Duration = std::time::Duration::from_secs(40);
 pub struct Objects {
     store: Arc<dyn ObjectStore>,
     cache: Option<PathBuf>,
+    memory: Option<Scoped>,
     owners: bool,
     moves: Arc<Mutex<HashMap<Hash, Arc<Moved>>>>,
 }
@@ -41,6 +43,7 @@ impl Objects {
         Self {
             store,
             cache: None,
+            memory: None,
             owners: false,
             moves: Arc::default(),
         }
@@ -48,6 +51,11 @@ impl Objects {
 
     pub fn with_cache(mut self, dir: PathBuf) -> Self {
         self.cache = Some(dir);
+        self
+    }
+
+    pub fn with_memory(mut self, memory: Scoped) -> Self {
+        self.memory = Some(memory);
         self
     }
 
@@ -182,6 +190,17 @@ impl Objects {
     }
 
     async fn raw_at(&self, path: Path, hash: Hash) -> Result<Vec<u8>> {
+        if let Some(raw) = self.memory.as_ref().and_then(|memory| memory.get(hash)) {
+            return Ok(raw.to_vec());
+        }
+        let raw = self.raw_stored(path, hash).await?;
+        if let Some(memory) = &self.memory {
+            memory.insert(hash, &raw);
+        }
+        Ok(raw)
+    }
+
+    async fn raw_stored(&self, path: Path, hash: Hash) -> Result<Vec<u8>> {
         if let Some(dir) = &self.cache
             && let Ok(stored) = tokio::fs::read(dir.join(hash.to_string())).await
             && let Ok(raw) = verify(&path, &stored, hash, OBJECT_LIMIT)
