@@ -81,7 +81,7 @@ export function DocumentAgentsGuide({
             items={[
               "La cartella di un cliente salvata e bloccata, così nemmeno il tuo codice può modificarla direttamente.",
               "Una chiave per l’agente che raggiunge solo quel cliente.",
-              "Una copia privata per ogni run dell’agente, pronta in millisecondi.",
+              "Una copia privata per ogni run dell’agente, pronta in 10 ms.",
               "Un elenco chiaro di cosa ha cambiato l’agente, commit per commit e riga per riga.",
               "Un unico passo di approvazione che solo tu puoi fare, e un modo per annullarlo in seguito.",
             ]}

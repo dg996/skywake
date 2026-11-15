@@ -67,7 +67,7 @@ export function PreviewsGuide({
         <p>
           In this guide we’ll do it another way. Your app’s data lives in one place, on a branch
           called <code>main</code>. Each pull request gets its own copy of that branch, made in
-          milliseconds, because <b>a copy here shares the files instead of duplicating them</b>. The
+          10 ms, because <b>a copy here shares the files instead of duplicating them</b>. The
           preview can change its copy, even break it, and <code>main</code> never notices. And we’ll
           catch that euro bug on the way.
         </p>
@@ -78,7 +78,7 @@ export function PreviewsGuide({
           <Checklist
             items={[
               "Your app’s data saved once, on a main branch that nothing can change by accident.",
-              "A full copy of that data for each pull request, made in milliseconds.",
+              "A full copy of that data for each pull request, made in 10 ms.",
               "A preview that runs on its copy, and can break it safely.",
               "A read-only key, so reviewers can look without touching.",
               "One call to ship the change, and one to throw the copy away.",

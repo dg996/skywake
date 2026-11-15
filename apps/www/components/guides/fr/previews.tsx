@@ -69,7 +69,7 @@ export function PreviewsGuide({
         <p>
           Dans ce guide, nous faisons autrement. Les données de votre app vivent à un seul endroit,
           sur une branche appelée <code>main</code>. Chaque pull request reçoit sa propre copie de
-          cette branche, créée en quelques millisecondes, car{" "}
+          cette branche, créée en 10 ms, car{" "}
           <b>une copie partage ici les fichiers au lieu de les dupliquer</b>. La preview peut
           modifier sa copie, voire la casser, sans que <code>main</code> s’en aperçoive. Et nous
           attraperons ce bug d’euros en chemin.
@@ -81,7 +81,7 @@ export function PreviewsGuide({
           <Checklist
             items={[
               "Les données de votre app enregistrées une fois, sur une branche main que rien ne peut modifier par accident.",
-              "Une copie complète de ces données pour chaque pull request, créée en quelques millisecondes.",
+              "Une copie complète de ces données pour chaque pull request, créée en 10 ms.",
               "Une preview qui tourne sur sa copie, et peut la casser sans risque.",
               "Une clé en lecture seule, pour que les relecteurs regardent sans toucher.",
               "Un appel pour livrer le changement, et un autre pour jeter la copie.",

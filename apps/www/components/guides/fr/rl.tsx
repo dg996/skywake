@@ -75,7 +75,7 @@ export function RlGuide({ locale, title }: { locale: Locale; t: HomeMessages; ti
           <Checklist
             items={[
               "Votre suite de tâches enregistrée une fois, comme point de départ verrouillé.",
-              "Une copie neuve et privée pour chaque rollout, créée en quelques millisecondes.",
+              "Une copie neuve et privée pour chaque rollout, créée en 10 ms.",
               "Des outils que votre politique appelle pour lire et écrire des fichiers sur sa copie.",
               "Un score pour chaque rollout, et la liste exacte de ce qu’il a changé.",
               "Des réinitialisations en une seule suppression, les rollouts suspects étant gardés pour un examen plus attentif.",

@@ -72,7 +72,7 @@ export function RlGuide({ locale, title }: { locale: Locale; t: HomeMessages; ti
           <Checklist
             items={[
               "Tu conjunto de tareas guardado una vez, como punto de partida bloqueado.",
-              "Una copia nueva y privada para cada rollout, creada en milisegundos.",
+              "Una copia nueva y privada para cada rollout, creada en 10 ms.",
               "Herramientas que tu política llama para leer y escribir archivos en su copia.",
               "Una puntuación para cada rollout y la lista exacta de lo que cambió.",
               "Reinicios que son un solo borrado, guardando los rollouts raros para mirarlos con calma.",

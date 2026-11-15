@@ -80,7 +80,7 @@ export function DocumentAgentsGuide({
             items={[
               "La carpeta de un cliente guardada y bloqueada, para que ni siquiera tu propio código pueda editarla directamente.",
               "Una clave de agente que solo llega a ese cliente.",
-              "Una copia privada para cada ejecución del agente, lista en milisegundos.",
+              "Una copia privada para cada ejecución del agente, lista en 10 ms.",
               "Una lista clara de lo que cambió el agente, commit a commit y línea a línea.",
               "Un paso de aprobación que solo tú puedes dar, y una forma de deshacerlo después.",
             ]}
