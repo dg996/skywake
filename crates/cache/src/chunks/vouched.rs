@@ -1,10 +1,3 @@
-//! Which folders this node has read a chunk or blob from itself.
-//!
-//! The cache keeps one copy of each piece of content, however many folders
-//! hold it. A folder is served the copy only once the node has read the content
-//! from that folder's bucket, so naming a hash gets nothing a folder does not
-//! hold: knowing what another organization stores is not enough to read it.
-
 use std::collections::{HashMap, HashSet};
 use std::future::Future;
 use std::io;
@@ -16,7 +9,6 @@ use tokio::sync::OnceCell;
 use super::source::Kind;
 use crate::hold;
 
-/// Pairs remembered before the set starts over; each costs 16 bytes.
 const VOUCHED_MAX: usize = 4_000_000;
 
 type Proof = Arc<OnceCell<Result<(), (io::ErrorKind, String)>>>;
@@ -24,13 +16,10 @@ type Proof = Arc<OnceCell<Result<(), (io::ErrorKind, String)>>>;
 #[derive(Default)]
 pub(crate) struct Vouched {
     known: Mutex<HashSet<u128>>,
-    /// Reads under way, so many asking at once for one folder's chunk cause one read.
     proving: Mutex<HashMap<u128, Proof>>,
 }
 
 impl Vouched {
-    /// Whether `folder` holds `hash`: known already, or read from its bucket
-    /// now with `read`, which must fail when the folder does not hold it.
     pub(super) async fn prove<F, Fut>(
         &self,
         kind: Kind,
@@ -68,7 +57,6 @@ impl Vouched {
         hold(&self.known).contains(&key(kind, folder, hash))
     }
 
-    /// Records that this node just read `hash` from `folder`'s bucket itself.
     pub(super) fn vouch(&self, kind: Kind, folder: &str, hash: Hash) {
         self.add(key(kind, folder, hash));
     }
@@ -76,7 +64,6 @@ impl Vouched {
     fn add(&self, key: u128) {
         let mut known = hold(&self.known);
         if known.len() >= VOUCHED_MAX {
-            // Forgetting only costs a read from the bucket the next time.
             known.clear();
         }
         known.insert(key);

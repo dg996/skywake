@@ -1,5 +1,3 @@
-//! A folder is served only content it holds: knowing another folder's hash reads nothing.
-
 mod common;
 
 use std::sync::Arc;
@@ -16,7 +14,6 @@ use tempfile::tempdir;
 
 use common::{TOKEN, serve};
 
-/// A bucket where folder `a` holds a chunk and folder `b` holds nothing, and a node over it.
 async fn two_folders() -> (Arc<InMemory>, String, Hash, Vec<u8>) {
     let bucket = Arc::new(InMemory::new());
     let a: Arc<dyn ObjectStore> = Arc::new(PrefixStore::new(bucket.clone(), "a"));
@@ -60,9 +57,7 @@ fn pass(folder: &str) -> String {
 #[tokio::test]
 async fn a_folder_without_the_chunk_is_not_served_the_cached_copy() {
     let (_, url, hash, data) = two_folders().await;
-    // Folder `a` reads it, so the node now keeps a copy.
     assert_eq!(get(&url, hash, "a", TOKEN).await, (200, data));
-    // Folder `b` names the same hash, but does not hold it.
     assert_eq!(get(&url, hash, "b", TOKEN).await.0, 404);
 }
 
@@ -97,7 +92,6 @@ async fn a_pass_reads_only_its_own_folder() {
 async fn a_bundle_read_skips_chunks_the_folder_does_not_hold() {
     let (bucket, url, hash, data) = two_folders().await;
     assert_eq!(get(&url, hash, "a", TOKEN).await.0, 200);
-    // Folder `b` claims a bundle holding that chunk, with other bytes in it.
     let fake = Hash::of(b"a bundle folder b made up");
     let path = object_store::path::Path::from(format!("b/bundles/{fake}"));
     bucket.put(&path, vec![0u8; 64].into()).await.unwrap();

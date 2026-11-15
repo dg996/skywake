@@ -89,8 +89,6 @@ async fn serve_one(node: &Node, kind: Kind, hash: &str, at: At, headers: &Header
     if node.missing.known(&missing) {
         return StatusCode::NOT_FOUND.into_response();
     }
-    // The copy kept here may have come from another folder: the first time,
-    // read it from this folder's bucket, which proves the folder holds it.
     let proved = node.vouched.prove(kind, &at.folder, hash, || {
         read_into(node, source.as_ref(), hash)
     });
@@ -168,7 +166,6 @@ fn send(file: tokio::fs::File, size: u64, permit: OwnedSemaphorePermit) -> Respo
         .into_response()
 }
 
-/// Reads `hash` from the bucket into the cache; a chunk the bucket lacks is `NotFound`.
 async fn read_into(node: &Node, source: &dyn Source, hash: Hash) -> io::Result<()> {
     let data = source.fetch(hash).await.map_err(|error| {
         if is_missing(&error) {

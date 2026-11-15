@@ -25,8 +25,6 @@ impl Node {
         Pass::check(bearer(headers)?, self.token.as_ref()?).map(Rights::Pass)
     }
 
-    /// Whether the caller may read content in `folder`: anything with the
-    /// shared token, only its own folder with a pass.
     pub(crate) fn may_read(&self, headers: &HeaderMap, folder: &str) -> bool {
         match self.rights(headers) {
             Some(Rights::Full) => true,

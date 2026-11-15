@@ -49,8 +49,6 @@ pub(crate) async fn bundled(
         return StatusCode::SERVICE_UNAVAILABLE.into_response();
     };
     let objects = Objects::new(store);
-    // A copy kept here may have come from another folder. Chunks this folder
-    // was never served are read from its own bundle first, which proves it holds them.
     let folder = at.folder.as_str();
     let fresh: Vec<Bundled> = wanted
         .iter()
