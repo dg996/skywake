@@ -249,7 +249,8 @@ jobs:
             (cd "$package" && npm publish --access public --ignore-scripts)
           done
       - name: Publish the TypeScript SDK
-        run: npm publish dist-npm/skywake-sdk-*.tgz --access public --ignore-scripts
+        # The ./ matters: without it npm reads the path as a GitHub repository.
+        run: npm publish ./dist-npm/skywake-sdk-*.tgz --access public --ignore-scripts
 
   pypi:
     name: PyPI (Python SDK)
@@ -273,3 +274,5 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # release/v1
         with:
           packages-dir: dist-python
+          # A rerun after a partial upload skips the files PyPI already has.
+          skip-existing: true
