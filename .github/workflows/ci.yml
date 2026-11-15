@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
 
 concurrency:
@@ -35,11 +35,15 @@ jobs:
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
-      - run: cargo test --workspace
+      - run: cargo test --workspace --exclude skywake-daemon
+      # The daemon's tests mount FUSE and act as other users, so they run as root.
+      - run: cargo test -p skywake-daemon
+        env:
+          CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER: sudo -E
 
-  # Every benchmark compiles, and the Criterion ones run in quick mode. Heavy runs are in benchmarks.yml.
+  # Every benchmark type-checks and passes clippy. Running them, quick or full, is in benchmarks.yml.
   benchmarks:
-    name: Benchmarks (compile, Criterion quick)
+    name: Benchmarks (check)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
@@ -52,10 +56,7 @@ jobs:
           toolchain: stable
           components: clippy
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
-      - run: cargo bench --workspace --features skywake-index/bench --no-run
-      - run: cargo clippy -p skywake-index --features bench --benches -- -D warnings
-      - run: scripts/bench.sh micro --quick
-      - run: scripts/bench.sh index --quick
+      - run: cargo clippy --workspace --benches --features skywake-index/bench -- -D warnings
 
   format:
     name: Formatting
@@ -70,6 +71,8 @@ jobs:
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 22
+          # This job has no pnpm, so no pnpm cache.
+          package-manager-cache: false
       - run: scripts/format.sh --check
 
   typescript:

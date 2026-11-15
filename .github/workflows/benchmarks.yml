@@ -1,7 +1,7 @@
 name: Benchmarks
 
 # Heavy and cloud runs, started by hand. Every result is uploaded as an artifact; compare two with
-# scripts/compare-benchmarks.sh. The pull-request job in ci.yml only compiles and runs the quick ones.
+# scripts/compare-benchmarks.sh. The pull-request job in ci.yml only checks that they compile.
 on:
   workflow_dispatch:
     inputs:
