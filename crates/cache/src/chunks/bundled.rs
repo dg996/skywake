@@ -8,10 +8,12 @@ use axum::extract::{Path, Query, State};
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use skywake_core::cache::{BATCH_FILES_MAX, BATCH_MAX, InBundle};
+use skywake_core::store::bundles;
 use skywake_core::{Bundled, Hash, Objects};
+use tracing::warn;
 
 use super::mark_hot;
-use super::source::At;
+use super::source::{At, Kind};
 use crate::Node;
 
 pub(crate) async fn bundled(
@@ -21,7 +23,7 @@ pub(crate) async fn bundled(
     headers: HeaderMap,
     body: Bytes,
 ) -> Response {
-    if !node.authorized(&headers) {
+    if !node.may_read(&headers, &at.folder) {
         return StatusCode::UNAUTHORIZED.into_response();
     }
     let (Ok(bundle), Ok(wanted)) = (
@@ -47,9 +49,34 @@ pub(crate) async fn bundled(
         return StatusCode::SERVICE_UNAVAILABLE.into_response();
     };
     let objects = Objects::new(store);
-    node.cache.fetch_bundled(&objects, wanted.clone()).await;
+    let folder = at.folder.as_str();
+    let fresh: Vec<Bundled> = wanted
+        .iter()
+        .filter(|one| !node.vouched.knows(Kind::Chunks, folder, one.chunk.hash))
+        .copied()
+        .collect();
+    if !fresh.is_empty() {
+        bundles::get_many(&objects, fresh, |hash, data| {
+            if let Err(error) = node.cache.insert(hash, &data) {
+                warn!(%hash, %error, "can't write to the chunk cache");
+            }
+            node.vouched.vouch(Kind::Chunks, folder, hash);
+        })
+        .await;
+    }
+    let held = |one: &Bundled| node.vouched.knows(Kind::Chunks, folder, one.chunk.hash);
+    node.cache
+        .fetch_bundled(
+            &objects,
+            wanted.iter().filter(|one| held(one)).copied().collect(),
+        )
+        .await;
     let mut reply = Vec::with_capacity(size as usize + wanted.len());
     for at in wanted {
+        if !held(&at) {
+            reply.push(0);
+            continue;
+        }
         let source = InBundle {
             objects: objects.clone(),
             at,

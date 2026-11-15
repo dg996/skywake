@@ -24,6 +24,17 @@ impl Node {
         }
         Pass::check(bearer(headers)?, self.token.as_ref()?).map(Rights::Pass)
     }
+
+    pub(crate) fn may_read(&self, headers: &HeaderMap, folder: &str) -> bool {
+        match self.rights(headers) {
+            Some(Rights::Full) => true,
+            Some(Rights::Pass(pass)) => {
+                let folder = folder.trim_matches('/');
+                !folder.is_empty() && pass.folder.trim_matches('/') == folder
+            }
+            None => false,
+        }
+    }
 }
 
 fn bearer(headers: &HeaderMap) -> Option<&str> {

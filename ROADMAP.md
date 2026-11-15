@@ -310,8 +310,10 @@ Everything a team needs to trust it with real work.
   the guarantees from Phases 3 and 4 still hold.
 - Regions: serve each namespace from the region it was created in.
 - Bring your own bucket: a namespace can live in the customer's bucket.
-- Organization isolation: content is never readable just by knowing its
-  hash.
+- ✅ Organization isolation: content is never readable just by knowing its
+  hash. A cache server keeps one copy of each chunk, but serves it to a
+  folder only after reading it from that folder's bucket itself, and a pass
+  reads only its own folder.
 - On-disk format versioning and an upgrade path.
 - Documentation, and the published benchmark report.
 

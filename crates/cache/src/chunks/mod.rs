@@ -5,11 +5,13 @@ mod heat;
 mod missing;
 mod outboards;
 mod source;
+mod vouched;
 
 pub(crate) use bundled::bundled;
 pub(crate) use heat::Heat;
 pub(crate) use missing::Missing;
 pub(crate) use outboards::Outboards;
+pub(crate) use vouched::Vouched;
 
 use std::io;
 use std::sync::Arc;
@@ -21,7 +23,7 @@ use axum::http::{HeaderMap, HeaderValue, StatusCode, header};
 use axum::response::{IntoResponse, Response};
 use futures::stream;
 use skywake_core::Hash;
-use skywake_core::cache::{HOT, Loaded};
+use skywake_core::cache::{HOT, Loaded, Source};
 use tokio::io::AsyncReadExt;
 use tokio::sync::OwnedSemaphorePermit;
 use tracing::warn;
@@ -67,7 +69,7 @@ fn mark_hot(node: &Node, route: &str, mut response: Response) -> Response {
 }
 
 async fn serve_one(node: &Node, kind: Kind, hash: &str, at: At, headers: &HeaderMap) -> Response {
-    if !node.authorized(headers) {
+    if !node.may_read(headers, &at.folder) {
         return StatusCode::UNAUTHORIZED.into_response();
     }
     let Ok(hash) = hash.parse::<Hash>() else {
@@ -86,6 +88,21 @@ async fn serve_one(node: &Node, kind: Kind, hash: &str, at: At, headers: &Header
     );
     if node.missing.known(&missing) {
         return StatusCode::NOT_FOUND.into_response();
+    }
+    let proved = node.vouched.prove(kind, &at.folder, hash, || {
+        read_into(node, source.as_ref(), hash)
+    });
+    match tokio::time::timeout(READY_WITHIN, proved).await {
+        Err(_) => return StatusCode::GATEWAY_TIMEOUT.into_response(),
+        Ok(Ok(())) => {}
+        Ok(Err(error)) if error.kind() == io::ErrorKind::NotFound => {
+            node.missing.remember(missing);
+            return StatusCode::NOT_FOUND.into_response();
+        }
+        Ok(Err(error)) => {
+            warn!(%hash, %error, "can't get chunk");
+            return StatusCode::BAD_GATEWAY.into_response();
+        }
     }
     let loaded = tokio::time::timeout(READY_WITHIN, node.cache.open(source.as_ref(), hash)).await;
     if let (Ok(Ok(loaded)), Some(outboards)) = (&loaded, &node.outboards) {
@@ -147,6 +164,20 @@ fn send(file: tokio::fs::File, size: u64, permit: OwnedSemaphorePermit) -> Respo
         Body::from_stream(blocks),
     )
         .into_response()
+}
+
+async fn read_into(node: &Node, source: &dyn Source, hash: Hash) -> io::Result<()> {
+    let data = source.fetch(hash).await.map_err(|error| {
+        if is_missing(&error) {
+            io::Error::new(io::ErrorKind::NotFound, error.to_string())
+        } else {
+            error
+        }
+    })?;
+    if let Err(error) = node.cache.insert(hash, &data) {
+        warn!(%hash, %error, "can't write to the chunk cache");
+    }
+    Ok(())
 }
 
 fn is_missing(error: &io::Error) -> bool {

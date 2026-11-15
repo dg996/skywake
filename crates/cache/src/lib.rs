@@ -27,7 +27,7 @@ use tokio::net::TcpListener;
 use tokio::sync::Semaphore;
 use tracing::{info, warn};
 
-use chunks::{Heat, Missing, Outboards};
+use chunks::{Heat, Missing, Outboards, Vouched};
 
 const REQUESTS_AT_ONCE: usize = 512;
 
@@ -37,6 +37,7 @@ pub struct Node {
     token: Option<String>,
     requests: Arc<Semaphore>,
     missing: Missing,
+    vouched: Vouched,
     heat: Heat,
     outboards: Option<Arc<Outboards>>,
     logs: Option<Arc<log::Logs>>,
@@ -53,6 +54,7 @@ impl Node {
             token,
             requests: Arc::new(Semaphore::new(REQUESTS_AT_ONCE)),
             missing: Missing::default(),
+            vouched: Vouched::default(),
             heat: Heat::default(),
             outboards: None,
             logs: None,
